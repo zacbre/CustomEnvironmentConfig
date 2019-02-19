@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Env.Exceptions;
 using Env.Interfaces;
 
 namespace Env
@@ -9,30 +10,24 @@ namespace Env
     public class ConfigurationParser
     {
         private readonly IEnvironmentVariableRepository _environmentVariableRepository;
-        private List<Type> _recursivePrevention;
         
         public ConfigurationParser(IEnvironmentVariableRepository environmentVariableRepository)
         {
             _environmentVariableRepository = environmentVariableRepository;
-
-            _recursivePrevention = new List<Type>();
         }
         public T ParseConfiguration<T>()
         {
             var type = typeof(T);
             var instance = (T)Activator.CreateInstance(type);
-            GetProperties(instance, type, null);
+            GetProperties(instance, type, null, new Stack<Type>());
 
             return instance;
         }
         
-        private void GetProperties<T>(T instance, Type type, string prefix)
+        private void GetProperties<T>(T instance, Type type, string prefix, Stack<Type> recursive)
         {
-            if (_recursivePrevention.Contains(type))
-            {
-                throw new StackOverflowException($"Eternal class creation loop... Type already initialized: {type.ToString()}");
-            }
-            _recursivePrevention.Add(type);
+            Push(recursive, type);
+            
             foreach (PropertyInfo prop in type.GetProperties())
             {
                 if (prop.MemberType != MemberTypes.Property)
@@ -49,7 +44,7 @@ namespace Env
                         var val = _environmentVariableRepository.GetEnvironmentVariable(prefix != null ? $"{prefix + "_" ?? ""}{cAttr.Name}" : cAttr.Name);
                         if (cAttr.Required == ConfigItemRequirement.Required && string.IsNullOrEmpty(val))
                         {
-                            throw new Exception(
+                            throw new KeyNotFoundException(
                                 $"[CustomEnvironmentConfig] Required configuration environment variable is empty: " +
                                 $"{type.Name}.{prop.Name} (looking for env '{(prefix != null ? $"{prefix + "_" ?? ""}{cAttr.Name}" : cAttr.Name)}'.");
                         }
@@ -64,11 +59,23 @@ namespace Env
                     {
                         // Create new instance of type.
                         var subInstance = Activator.CreateInstance(prop.PropertyType);
-                        GetProperties(subInstance, prop.PropertyType, $"{(prefix != null ? prefix + "_" : "")}{cAttr.Name}");
+                        GetProperties(subInstance, prop.PropertyType, $"{(prefix != null ? prefix + "_" : "")}{cAttr.Name}", recursive);
                         prop.SetValue(instance, subInstance);
                     }
                 }
             }
+
+            recursive.Pop();
+        }
+
+        private void Push(Stack<Type> stack, Type item)
+        {
+            if (stack.Contains(item))
+            {
+                throw new RecursiveClassException($"Class instantiation loop detected... Type already initialized: {item.ToString()}");
+            }
+
+            stack.Push(item);
         }
     }
 }

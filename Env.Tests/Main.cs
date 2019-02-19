@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Env.Exceptions;
 using Env.Tests.Configuration;
 using Xunit;
 
@@ -28,10 +29,27 @@ namespace Env.Tests
         [Fact]
         public void Does_Not_Allow_Recursive_Items()
         {
-            Assert.Throws<StackOverflowException>(() =>
+            Assert.Throws<RecursiveClassException>(() =>
             {
                 ConfigurationParser.ParseConfiguration<RecursiveClass>();                
             });
+        }
+        
+        [Fact]
+        public void Allows_Class_To_Be_Used_More_Than_Once()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                { "SubClass1_Item", "Val1" },
+                { "SubClass2_Item", "Val2" },
+                { "SubClass3_Item", "Val3" },
+            };
+            // Set the environment variables we're going to use.
+            EnvironmentVariableRepository.SetEnvironment(dict);
+            var instance = ConfigurationParser.ParseConfiguration<ReUsableClass>();
+            Assert.Equal("Val1", instance.SubClass1.Item);
+            Assert.Equal("Val2", instance.SubClass2.Item);
+            Assert.Equal("Val3", instance.SubClass3.Item);
         }
 
         [Fact]
@@ -41,7 +59,7 @@ namespace Env.Tests
             // Set the environment variables we're going to use.
             EnvironmentVariableRepository.SetEnvironment(dict);
             
-            Assert.Throws<Exception>(() =>
+            Assert.Throws<KeyNotFoundException>(() =>
             {
                 ConfigurationParser.ParseConfiguration<RequiredItemClass>();
             });
