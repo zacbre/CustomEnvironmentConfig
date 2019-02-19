@@ -3,7 +3,7 @@ Enables binding environment variables to classes.
 
 ### Example
 
-**(.env)**
+**(.env [environment variables])**
 ```
 MyConfigItem="Test Value"
 Subclass_MyConfigSubItem="Test Subitem Value"
@@ -66,7 +66,22 @@ public class MyConfiguration
     // OR
     [ConfigItem(Name = "MyOtherItem")]
     public int OtherItem { get; set; }
+    
+    [ConfigItem("Test")
+    public SubConfiguration MySubClass { get; set; }
 }
+public class SubConfiguration
+{
+    [ConfigItem]
+    public bool SubItem { get; set; }
+}
+```
+
+The environment variables for this would look like as follows:
+```
+MyItem="Value"
+MyOtherItem="Value"
+Test_SubItem="Value"
 ```
 
 You can also set if the item is required to be set in the environment or not.
