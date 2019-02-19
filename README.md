@@ -1,7 +1,7 @@
 # dotnetcore-custom-env
 Enables binding environment variables to classes.
 
-[![Nuget](https://img.shields.io/nuget/v/CustomEnvironmentConfig.svg)]("https://www.nuget.org/packages/CustomEnvironmentConfig/")
+[![Nuget](https://img.shields.io/nuget/v/CustomEnvironmentConfig.svg)](https://www.nuget.org/packages/CustomEnvironmentConfig/)
 
 ### Example
 
