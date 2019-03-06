@@ -1,7 +1,7 @@
 using System;
 using Env.Interfaces;
 
-namespace Env
+namespace Env.Repositories
 {
     public class EnvironmentVariableRepository : IEnvironmentVariableRepository
     {

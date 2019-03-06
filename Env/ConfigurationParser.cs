@@ -15,6 +15,7 @@ namespace Env
         {
             _environmentVariableRepository = environmentVariableRepository;
         }
+        
         public T ParseConfiguration<T>()
         {
             var type = typeof(T);
