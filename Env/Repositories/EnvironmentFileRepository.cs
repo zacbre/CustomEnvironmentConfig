@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using Env.Interfaces;
 
@@ -8,9 +9,57 @@ namespace Env.Repositories
     public class EnvironmentFileRepository : IEnvironmentVariableRepository
     {
         private readonly Dictionary<string, string> _fileValues = new Dictionary<string, string>();
-        private readonly IEnvironmentVariableRepository _environmentVariableRepository;
+        private readonly IEnvironmentVariableRepository _environmentVariableRepository = new EnvironmentVariableRepository();
+        
+        private readonly char[] trimChars = new[] {' ', '"', '\''};
         
         public EnvironmentFileRepository(string fileName, bool requireFile = true)
+        {
+            ReadFile(fileName, requireFile);
+        }
+        
+        public EnvironmentFileRepository(IEnvironmentVariableRepository environmentVariableRepository, string fileName, bool requireFile = true)
+        {
+            _environmentVariableRepository = environmentVariableRepository;
+            ReadFile(fileName, requireFile);
+        }
+
+        public EnvironmentFileRepository(string[] lines)
+        {
+            ReadLines(lines);
+        }
+        
+        public EnvironmentFileRepository(IEnvironmentVariableRepository environmentVariableRepository, string[] lines)
+        {
+            _environmentVariableRepository = environmentVariableRepository;
+            ReadLines(lines);
+        }
+        
+        public string GetEnvironmentVariable(string keyName)
+        {
+            var value = _environmentVariableRepository.GetEnvironmentVariable(keyName);
+            if (value == null)
+            {
+                if (_fileValues.TryGetValue(keyName, out value))
+                {
+                    return value;
+                }                
+            }
+
+            return value;
+        }
+
+        private void ReadLines(string[] lines)
+        {
+            var currentLine = 0;
+            foreach (var line in lines)
+            {
+                currentLine++;
+                ParseLine(line, currentLine);
+            }
+        }
+
+        private void ReadFile(string fileName, bool requireFile)
         {
             if (!File.Exists(fileName) && requireFile)
             {
@@ -22,49 +71,32 @@ namespace Env.Repositories
             foreach (var line in fileLines)
             {
                 currentLine++;
-                // Split the string up by first =
-                if (line.StartsWith("#"))
-                {
-                    continue;
-                }
-
-                if (!line.Contains("="))
-                {
-                    throw new Exception($"Cannot locate key or value on line {currentLine}. Please include an '=' to indicate key and value.");
-                }
-
-                string keyName = "", keyValue = "";
-
-                var splits = line.Split('=');
-                keyName = splits[0].Trim(new char[] { ' ', '"', '\'' });
-                for (var i = 1; i < splits.Length; i++)
-                {
-                    keyValue += splits[i];
-                }
-
-                try
-                {
-                    _fileValues.Add(keyName, keyValue);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Duplicate key '{keyName}' detected in environment file '{fileName}'.");
-                }
+                ParseLine(line, currentLine);
             }
-            
-            // Lastly, initialize the environment variable repository just in case we need to fall back to environment.
-            _environmentVariableRepository = new EnvironmentVariableRepository();
         }
-        public string GetEnvironmentVariable(string keyName)
+       
+        private void ParseLine(string line, int currentLine)
         {
-            // Grab these from a file.
-            if (_fileValues.TryGetValue(keyName, out var value))
+            if (line.StartsWith("#") || string.IsNullOrEmpty(line))
             {
-                return value;
+                return;
+            }
+
+            if (!line.Contains("="))
+            {
+                throw new Exception($"Cannot locate key or value on line {currentLine}. Please include an '=' to indicate key and value.");
+            }
+
+            var equalIndex = line.IndexOf("=", StringComparison.Ordinal);
+            var keyName = line.Substring(0, equalIndex).Trim(trimChars);
+            var keyValue = line.Substring(equalIndex + 1, line.Length - equalIndex - 1).Trim(trimChars);
+
+            if (_fileValues.ContainsKey(keyName))
+            {
+                throw new DuplicateNameException($"Duplicate key '{keyName}' detected in environment file."); 
             }
             
-            // Try to locate from env.
-            return _environmentVariableRepository.GetEnvironmentVariable(keyName);
+            _fileValues.Add(keyName, keyValue);
         }
     }
 }
