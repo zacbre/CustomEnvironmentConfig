@@ -7,12 +7,12 @@ namespace Env
 {
     public static class BuilderExtensions
     {
-        public static IWebHostBuilder UseCustomEnvironmentConfig<T>(this IWebHostBuilder hostBuilder) where T : class
+        public static IWebHostBuilder UseEnvironmentConfiguration<T>(this IWebHostBuilder hostBuilder) where T : class
         {
             return ConfigureService<T>(hostBuilder);
         }
         
-        public static IWebHostBuilder UseCustomEnvironmentConfig<T>(this IWebHostBuilder hostBuilder, string fileName, bool requireFile = true) where T : class
+        public static IWebHostBuilder UseEnvironmentConfiguration<T>(this IWebHostBuilder hostBuilder, string fileName, bool requireFile = true) where T : class
         {
             return ConfigureService<T>(hostBuilder, fileName, requireFile);
         }

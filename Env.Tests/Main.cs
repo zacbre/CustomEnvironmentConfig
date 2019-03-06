@@ -148,6 +148,23 @@ namespace Env.Tests
         }
 
         [Fact]
+        public void Can_Trim_Quotes_And_Spaces()
+        {
+            var values = new[]
+            {
+                "Test = 'test'",
+                "Test1=\"1\"",
+                "Test2='true'",
+            };
+            
+            var parser = new ConfigurationParser(new EnvironmentFileRepository(values));
+            var output = parser.ParseConfiguration<CanParseAFile>();
+            Assert.Equal("test", output.Test);
+            Assert.Equal(1, output.Test1);
+            Assert.True(output.Test2);
+        }
+
+        [Fact]
         public void Prefer_Environment_Over_File()
         {
             var values = new[]
