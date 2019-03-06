@@ -4,6 +4,11 @@ using System.Runtime.CompilerServices;
 namespace Env
 {
     [AttributeUsage(AttributeTargets.Property)]
+    public class IgnoreConfigItem : Attribute
+    {
+    }
+    
+    [AttributeUsage(AttributeTargets.Property)]
     public class ConfigItem : Attribute
     {
         public string Name { get; set; }

@@ -15,16 +15,13 @@ Subclass_MyConfigSubItem=Test Subitem Value
 ```
 public class MyConfiguration 
 {
-    [ConfigItem]
     public string MyConfigItem { get; set; }
     
-    [ConfigItem]
     public MyConfigSubClass Subclass { get; set; }
 }
 
 public class MyConfigSubClass 
 {
-    [ConfigItem]
     public string MyConfigSubItem { get; set; }
 }
 ```
@@ -59,7 +56,8 @@ public class Startup
 ```
 
 If you want, you can re-map the name of the items using [ConfigItem]:
-
+(Do note, [ConfigItem] is not required and only needed if you want to set the requirement policy of a property
+or change the name of the environment variable)
 ```
 public class MyConfiguration
 {
@@ -76,6 +74,20 @@ public class SubConfiguration
 {
     [ConfigItem]
     public bool SubItem { get; set; }
+}
+```
+
+If you want to ignore parsing certain properties in a class, you can use [IgnoreConfigItem]:
+```
+public class MyConfiguration
+{
+    [ConfigItem("MyItem")]
+    public bool Item { get; set; }
+    
+    public int OtherItem { get; set; }
+    
+    [IgnoreConfigItem]
+    public SubConfiguration MySubClass { get; set; }
 }
 ```
 
@@ -116,9 +128,7 @@ To parse environment variables directly:
 ```
 public void MyFunction() 
 {
-    // Use environment variable repository or your own custom one that implements IEnvironmentVariableRepository
-    var parser = new ConfigurationParser(new EnvironmentVariableRepository());
-    var output = parser.ParseConfiguration<MyClass>();
+    var output = ConfigurationParser.Parse<MyClass>();
     // Access your class via output variable
 }
 ```
@@ -127,9 +137,7 @@ To parse from an environment file:
 ```
 public void MyFunction() 
 {
-    // Use environment variable repository or your own custom one that implements IEnvironmentVariableRepository
-    var parser = new ConfigurationParser(new EnvironmentFileRepository(fileName: "filename.env", requireFile: true));
-    var output = parser.ParseConfiguration<MyClass>();
+    var output = ConfigurationParser.Parse<MyClass>(fileName: "file.env", requireFile: true);
     // Access your class via output variable
 }
 ```

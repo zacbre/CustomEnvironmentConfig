@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Env.Exceptions;
 using Env.Interfaces;
+using Env.Repositories;
 
 namespace Env
 {
@@ -14,6 +15,12 @@ namespace Env
         public ConfigurationParser(IEnvironmentVariableRepository environmentVariableRepository)
         {
             _environmentVariableRepository = environmentVariableRepository;
+        }
+
+        public static T Parse<T>(string fileName = null, bool requireFile = false)
+        {
+            var parser = new ConfigurationParser(new EnvironmentFileRepository(fileName, requireFile));
+            return parser.ParseConfiguration<T>();
         }
         
         public T ParseConfiguration<T>()
@@ -36,33 +43,44 @@ namespace Env
                     continue;
                 }
 
-                // Make sure it has no attributes that match our "ConfigItem" attribute.
-                var attr = prop.GetCustomAttributes(true).FirstOrDefault(a => a.GetType() == typeof(ConfigItem));
-                if (attr is ConfigItem cAttr)
+                var itemName = prop.Name;
+                var required = ConfigItemRequirement.Required;
+                
+                var configItemAttr = prop.GetCustomAttributes(true).FirstOrDefault(a => a.GetType() == typeof(ConfigItem));
+                var ignoreConfigItemAttr = prop.GetCustomAttributes(true).FirstOrDefault(a => a.GetType() == typeof(IgnoreConfigItem));
+                if (ignoreConfigItemAttr is IgnoreConfigItem)
                 {
-                    if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string))
+                    continue;
+                }
+                
+                if (configItemAttr is ConfigItem cAttr)
+                {
+                    itemName = cAttr.Name;
+                    required = cAttr.Required;
+                }   
+                
+                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string))
+                {
+                    var val = _environmentVariableRepository.GetEnvironmentVariable(prefix != null ? $"{prefix + "_" ?? ""}{itemName}" : itemName);
+                    if (required == ConfigItemRequirement.Required && string.IsNullOrEmpty(val))
                     {
-                        var val = _environmentVariableRepository.GetEnvironmentVariable(prefix != null ? $"{prefix + "_" ?? ""}{cAttr.Name}" : cAttr.Name);
-                        if (cAttr.Required == ConfigItemRequirement.Required && string.IsNullOrEmpty(val))
-                        {
-                            throw new KeyNotFoundException(
-                                $"[CustomEnvironmentConfig] Required configuration environment variable is empty: " +
-                                $"{type.Name}.{prop.Name} (looking for env '{(prefix != null ? $"{prefix + "_" ?? ""}{cAttr.Name}" : cAttr.Name)}'.");
-                        }
-
-                        // try to cast env to that type.
-                        var convertedVal = Convert.ChangeType(val, prop.PropertyType);
-
-                        // set property in instance.
-                        prop.SetValue(instance, convertedVal);
+                        throw new KeyNotFoundException(
+                            $"[CustomEnvironmentConfig] Required configuration environment variable is empty: " +
+                            $"{type.Name}.{prop.Name} (looking for env '{(prefix != null ? $"{prefix + "_" ?? ""}{itemName}" : itemName)}'.");
                     }
-                    else
-                    {
-                        // Create new instance of type.
-                        var subInstance = Activator.CreateInstance(prop.PropertyType);
-                        GetProperties(subInstance, prop.PropertyType, $"{(prefix != null ? prefix + "_" : "")}{cAttr.Name}", recursive);
-                        prop.SetValue(instance, subInstance);
-                    }
+
+                    // try to cast env to that type.
+                    var convertedVal = Convert.ChangeType(val, prop.PropertyType);
+
+                    // set property in instance.
+                    prop.SetValue(instance, convertedVal);
+                }
+                else
+                {
+                    // Create new instance of type.
+                    var subInstance = Activator.CreateInstance(prop.PropertyType);
+                    GetProperties(subInstance, prop.PropertyType, $"{(prefix != null ? prefix + "_" : "")}{itemName}", recursive);
+                    prop.SetValue(instance, subInstance);
                 }
             }
 

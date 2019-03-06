@@ -61,9 +61,16 @@ namespace Env.Repositories
 
         private void ReadFile(string fileName, bool requireFile)
         {
-            if (!File.Exists(fileName) && requireFile)
+            if (string.IsNullOrEmpty(fileName) || !File.Exists(fileName))
             {
-                throw new FileNotFoundException("The environment file you specified was not found.");
+                if (requireFile)
+                {
+                    throw new FileNotFoundException("The environment file you specified was not found.");
+                }
+                else
+                {
+                    return;
+                }
             }
 
             var currentLine = 0;
