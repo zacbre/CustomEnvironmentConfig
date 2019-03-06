@@ -1,6 +1,7 @@
 using Env.Interfaces;
 using Env.Repositories;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Env
@@ -21,20 +22,17 @@ namespace Env
         {
             return hostBuilder.ConfigureServices(services =>
             {
+                IEnvironmentVariableRepository environmentVariableRepository;
                 if (fileName != null)
                 {
-                    services.AddTransient<IEnvironmentVariableRepository>(s => new EnvironmentFileRepository(fileName, requireFile));
+                    environmentVariableRepository = new EnvironmentFileRepository(fileName, requireFile);
                 }
                 else
                 {
-                    services.AddTransient<IEnvironmentVariableRepository, EnvironmentVariableRepository>();                    
+                    environmentVariableRepository = new EnvironmentVariableRepository();                    
                 }
                 
-                services.AddTransient<ConfigurationParser>();
-                var provider = services.BuildServiceProvider();
-
-                var configurationParser = provider.GetService <ConfigurationParser>();
-
+                var configurationParser = new ConfigurationParser(environmentVariableRepository);
                 var instance = configurationParser.ParseConfiguration<T>();
                 services.AddSingleton(typeof(T), instance);
             });

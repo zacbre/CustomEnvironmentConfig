@@ -87,7 +87,7 @@ Test_SubItem=Value
 ```
 
 You can also set if the item is required to be set in the environment or not.
-By default, items are set to be required.
+By default, items are required.
 ```
 public class MyConfiguration
 {
