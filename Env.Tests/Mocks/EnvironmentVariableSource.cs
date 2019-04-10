@@ -3,11 +3,11 @@ using Env.Interfaces;
 
 namespace Env.Tests.Mocks
 {
-    public class EnvironmentVariableRepository : IEnvironmentVariableRepository
+    public class EnvironmentVariableSource : IEnvironmentSource
     {
         private Dictionary<string, string> _envDict;
 
-        public EnvironmentVariableRepository()
+        public EnvironmentVariableSource()
         {
             _envDict = new Dictionary<string, string>();
         }
@@ -16,8 +16,7 @@ namespace Env.Tests.Mocks
         {
             _envDict = _dict;
         }
-        
-        public string GetEnvironmentVariable(string keyName)
+        public string Get(string keyName)
         {
             if (_envDict.ContainsKey(keyName))
             {

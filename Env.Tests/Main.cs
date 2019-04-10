@@ -4,7 +4,9 @@ using System.Data;
 using Env.Exceptions;
 using Env.Repositories;
 using Env.Tests.Configuration;
+using Env.Tests.Mocks;
 using Xunit;
+using EnvironmentVariableRepository = Env.Repositories.EnvironmentVariableRepository;
 
 namespace Env.Tests
 {
@@ -25,7 +27,7 @@ namespace Env.Tests
                 { "SubItem_SubSubItem_Float", "2.22" }
             };
             // Set the environment variables we're going to use.
-            EnvironmentVariableRepository.SetEnvironment(dict);
+            EnvironmentVariableSource.SetEnvironment(dict);
             
             var instance = ConfigurationParser.ParseConfiguration<TestClass>();
             Assert.Equal("TEST_VAL_ITEM", instance.Item);
@@ -57,7 +59,7 @@ namespace Env.Tests
                 { "SubClass3_Item", "Val3" },
             };
             // Set the environment variables we're going to use.
-            EnvironmentVariableRepository.SetEnvironment(dict);
+            EnvironmentVariableSource.SetEnvironment(dict);
             var instance = ConfigurationParser.ParseConfiguration<ReUsableClass>();
             Assert.Equal("Val1", instance.SubClass1.Item);
             Assert.Equal("Val2", instance.SubClass2.Item);
@@ -69,7 +71,7 @@ namespace Env.Tests
         {
             var dict = new Dictionary<string, string>();
             // Set the environment variables we're going to use.
-            EnvironmentVariableRepository.SetEnvironment(dict);
+            EnvironmentVariableSource.SetEnvironment(dict);
             
             Assert.Throws<KeyNotFoundException>(() =>
             {
@@ -85,7 +87,7 @@ namespace Env.Tests
                 { "RequiredItem", "Test" },
             };
             // Set the environment variables we're going to use.
-            EnvironmentVariableRepository.SetEnvironment(dict);
+            EnvironmentVariableSource.SetEnvironment(dict);
             
             var instance = ConfigurationParser.ParseConfiguration<NotRequiredItemClass>();
             Assert.Null(instance.NotRequiredItem);
@@ -101,9 +103,9 @@ namespace Env.Tests
                 "Test1=1",
                 "Test2=true",
             };
-            
-            var parser = new ConfigurationParser(new EnvironmentFileRepository(values));
-            var output = parser.ParseConfiguration<CanParseAFile>();
+
+            FileSource.SetEnvironment(values);
+            var output = ConfigurationParser.Parse<CanParseAFile>(EnvironmentVariableRepository);
             
             Assert.Equal("test", output.Test);
             Assert.Equal(1, output.Test1);
@@ -123,7 +125,8 @@ namespace Env.Tests
             // We make sure we can handle case sensitive items.
             Assert.Throws<DuplicateNameException>(() =>
             {
-                var parser = new ConfigurationParser(new EnvironmentFileRepository(values));                
+                FileSource.SetEnvironment(values);
+                var output = ConfigurationParser.Parse<CanParseAFile>(EnvironmentVariableRepository);    
             });           
         }
 
@@ -141,8 +144,8 @@ namespace Env.Tests
                 "#Comment 3",
             };
             
-            var parser = new ConfigurationParser(new EnvironmentFileRepository(values));
-            var output = parser.ParseConfiguration<CaseSensitiveClass>();
+            FileSource.SetEnvironment(values);
+            var output = ConfigurationParser.Parse<CaseSensitiveClass>(EnvironmentVariableRepository);
             Assert.Equal("test", output.Test);
             Assert.Equal("test1", output.test);
         }
@@ -157,8 +160,8 @@ namespace Env.Tests
                 "Test2='true'",
             };
             
-            var parser = new ConfigurationParser(new EnvironmentFileRepository(values));
-            var output = parser.ParseConfiguration<CanParseAFile>();
+            FileSource.SetEnvironment(values);
+            var output = ConfigurationParser.Parse<CanParseAFile>(EnvironmentVariableRepository);
             Assert.Equal("test", output.Test);
             Assert.Equal(1, output.Test1);
             Assert.True(output.Test2);
@@ -170,7 +173,70 @@ namespace Env.Tests
             var values = new[]
             {
                 "Test=fromFile",
-                "test=test1",
+            };
+
+            var dict = new Dictionary<string, string>
+            {
+                {"Test", "fromEnv"},
+                {"test", "fromEnv"}
+            };
+            
+            EnvironmentVariableSource.SetEnvironment(dict);
+            FileSource.SetEnvironment(values);
+            EnvironmentVariableRepository.SetConfigurationType(ConfigurationTypeEnum.PreferEnvironment);
+            var output = ConfigurationParser.Parse<PreferClass>(EnvironmentVariableRepository);
+            Assert.Equal("fromEnv", output.Test);
+            Assert.Equal("fromEnv", output.test);
+        }
+        
+        [Fact]
+        public void Prefer_File_Over_Environment()
+        {
+            var values = new[]
+            {
+                "Test=fromFile",
+                "test=fromFile"
+            };
+
+            var dict = new Dictionary<string, string>
+            {
+                {"Test", "fromEnv"},
+            };
+            
+            EnvironmentVariableSource.SetEnvironment(dict);
+            FileSource.SetEnvironment(values);
+            EnvironmentVariableRepository.SetConfigurationType(ConfigurationTypeEnum.PreferFile);
+            var output = ConfigurationParser.Parse<PreferClass>(EnvironmentVariableRepository);
+            Assert.Equal("fromFile", output.Test);
+            Assert.Equal("fromFile", output.test);
+        }
+        
+        [Fact]
+        public void File_Only()
+        {
+            var values = new[]
+            {
+                "Test=fromFile",
+            };
+
+            var dict = new Dictionary<string, string>
+            {
+                {"Test", "fromEnv"},
+            };
+            
+            EnvironmentVariableSource.SetEnvironment(dict);
+            FileSource.SetEnvironment(values);
+            EnvironmentVariableRepository.SetConfigurationType(ConfigurationTypeEnum.FileOnly);
+            var output = ConfigurationParser.Parse<ConfigurationClass>(EnvironmentVariableRepository);
+            Assert.Equal("fromFile", output.Test);
+        }
+        
+        [Fact]
+        public void Environment_Only()
+        {
+            var values = new[]
+            {
+                "Test=fromFile",
             };
 
             var dict = new Dictionary<string, string>
@@ -178,11 +244,11 @@ namespace Env.Tests
                 {"Test", "fromEnv"}
             };
             
-            EnvironmentVariableRepository.SetEnvironment(dict);
-            var parser = new ConfigurationParser(new EnvironmentFileRepository(EnvironmentVariableRepository, values));
-            var output = parser.ParseConfiguration<CaseSensitiveClass>();
+            EnvironmentVariableSource.SetEnvironment(dict);
+            FileSource.SetEnvironment(values);
+            EnvironmentVariableRepository.SetConfigurationType(ConfigurationTypeEnum.EnvironmentOnly);
+            var output = ConfigurationParser.Parse<ConfigurationClass>(EnvironmentVariableRepository);
             Assert.Equal("fromEnv", output.Test);
-            Assert.Equal("test1", output.test);
         }
     }
 }

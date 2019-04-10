@@ -11,15 +11,23 @@ namespace Env
     public class ConfigurationParser
     {
         private readonly IEnvironmentVariableRepository _environmentVariableRepository;
-        
+
         public ConfigurationParser(IEnvironmentVariableRepository environmentVariableRepository)
         {
             _environmentVariableRepository = environmentVariableRepository;
         }
 
-        public static T Parse<T>(string fileName = null, bool requireFile = false)
+        public ConfigurationParser(ConfigurationTypeEnum configurationType, string fileName = null)
         {
-            var parser = new ConfigurationParser(new EnvironmentFileRepository(fileName, requireFile));
+            _environmentVariableRepository = new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationType, fileName),
+                configurationType);
+        }
+        
+        public static T Parse<T>(IEnvironmentVariableRepository env)
+        {
+            var parser = new ConfigurationParser(env);
             return parser.ParseConfiguration<T>();
         }
         

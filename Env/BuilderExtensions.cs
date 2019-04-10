@@ -13,26 +13,17 @@ namespace Env
             return ConfigureService<T>(hostBuilder);
         }
         
-        public static IWebHostBuilder UseEnvironmentConfiguration<T>(this IWebHostBuilder hostBuilder, string fileName, bool requireFile = true) where T : class
+        public static IWebHostBuilder UseEnvironmentConfiguration<T>(this IWebHostBuilder hostBuilder, string fileName) where T : class
         {
-            return ConfigureService<T>(hostBuilder, fileName, requireFile);
+            return ConfigureService<T>(hostBuilder, fileName);
         }
 
-        private static IWebHostBuilder ConfigureService<T>(IWebHostBuilder hostBuilder, string fileName = null, bool requireFile = true)
+        private static IWebHostBuilder ConfigureService<T>(IWebHostBuilder hostBuilder, string fileName = null, 
+            ConfigurationTypeEnum configurationType = ConfigurationTypeEnum.PreferEnvironment)
         {
             return hostBuilder.ConfigureServices(services =>
             {
-                IEnvironmentVariableRepository environmentVariableRepository;
-                if (fileName != null)
-                {
-                    environmentVariableRepository = new EnvironmentFileRepository(fileName, requireFile);
-                }
-                else
-                {
-                    environmentVariableRepository = new EnvironmentVariableRepository();                    
-                }
-                
-                var configurationParser = new ConfigurationParser(environmentVariableRepository);
+                var configurationParser = new ConfigurationParser(configurationType, fileName);
                 var instance = configurationParser.ParseConfiguration<T>();
                 services.AddSingleton(typeof(T), instance);
             });

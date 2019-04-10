@@ -6,49 +6,29 @@ using Env.Interfaces;
 
 namespace Env.Repositories
 {
-    public class EnvironmentFileRepository : IEnvironmentVariableRepository
+    public class FileVariableSource : IEnvironmentSource
     {
         private readonly Dictionary<string, string> _fileValues = new Dictionary<string, string>();
-        private readonly IEnvironmentVariableRepository _environmentVariableRepository = new EnvironmentVariableRepository();
-        
         private readonly char[] trimChars = new[] {' ', '"', '\''};
+        private readonly ConfigurationTypeEnum _configurationType;
         
-        public EnvironmentFileRepository(string fileName, bool requireFile = true)
+        public FileVariableSource(ConfigurationTypeEnum configurationType, string filename = null)
         {
-            ReadFile(fileName, requireFile);
-        }
-        
-        public EnvironmentFileRepository(IEnvironmentVariableRepository environmentVariableRepository, string fileName, bool requireFile = true)
-        {
-            _environmentVariableRepository = environmentVariableRepository;
-            ReadFile(fileName, requireFile);
-        }
-
-        public EnvironmentFileRepository(string[] lines)
-        {
-            ReadLines(lines);
-        }
-        
-        public EnvironmentFileRepository(IEnvironmentVariableRepository environmentVariableRepository, string[] lines)
-        {
-            _environmentVariableRepository = environmentVariableRepository;
-            ReadLines(lines);
-        }
-        
-        public string GetEnvironmentVariable(string keyName)
-        {
-            var value = _environmentVariableRepository.GetEnvironmentVariable(keyName);
-            if (value == null)
+            _configurationType = configurationType;
+            if (filename != null)
             {
-                if (_fileValues.TryGetValue(keyName, out value))
-                {
-                    return value;
-                }                
+                ReadFile(filename);
             }
-
-            return value;
         }
-
+        
+        public FileVariableSource(string[] lines = null)
+        {
+            if (lines != null)
+            {
+                ReadLines(lines);
+            }
+        }
+        
         private void ReadLines(string[] lines)
         {
             var currentLine = 0;
@@ -59,17 +39,13 @@ namespace Env.Repositories
             }
         }
 
-        private void ReadFile(string fileName, bool requireFile)
+        private void ReadFile(string fileName)
         {
-            if (string.IsNullOrEmpty(fileName) || !File.Exists(fileName))
+            if (_configurationType == ConfigurationTypeEnum.FileOnly)
             {
-                if (requireFile)
+                if (string.IsNullOrEmpty(fileName) || !File.Exists(fileName))
                 {
                     throw new FileNotFoundException("The environment file you specified was not found.");
-                }
-                else
-                {
-                    return;
                 }
             }
 
@@ -104,6 +80,11 @@ namespace Env.Repositories
             }
             
             _fileValues.Add(keyName, keyValue);
+        }
+
+        public string Get(string keyName)
+        {
+            return _fileValues.TryGetValue(keyName, out var value) ? value : null;
         }
     }
 }
