@@ -3,7 +3,7 @@ Enables binding environment variables and/or environment files to classes.
 
 [![Nuget](https://img.shields.io/nuget/v/CustomEnvironmentConfig.svg)](https://www.nuget.org/packages/CustomEnvironmentConfig/)
 
-### Example
+## Example
 
 **(.env [environment variables])**
 ```
@@ -111,18 +111,18 @@ public class MyConfiguration
 }
 ```
 
-# From an Env File:
+## From an Env File:
 
 Most of this applies from above, except instead your IWebHostBuilder would look like:
 ```
 // Program.cs
 public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                   .UseEnvironmentConfiguration<MyConfiguration>(fileName: "filename.env", requireFile: true)               
+                   .UseEnvironmentConfiguration<MyConfiguration>(fileName: "filename.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment)               
             .....
 ```
 
-# Non-DI:
+## Non-DI:
 
 To parse environment variables directly:
 ```
@@ -137,7 +137,35 @@ To parse from an environment file:
 ```
 public void MyFunction() 
 {
-    var output = ConfigurationParser.Parse<MyClass>(fileName: "file.env", requireFile: true);
+    var output = ConfigurationParser.Parse<MyClass>(fileName: "file.env");
     // Access your class via output variable
+}
+```
+
+## Preferences
+You can choose one of the following preferences:
+- Prefer Environment Over File
+- Prefer File Over Environment
+- Use Environment Only
+- Use File Only
+
+The default functionality is Prefer Environment over File.
+
+To use this functionality, there's two ways, both DI and non-DI:
+
+### DI
+```
+// Program.cs
+public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                   .UseEnvironmentConfiguration<MyConfiguration>(fileName: "filename.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment)               
+            .....
+```
+### Non-DI
+```
+public void MyFunction() 
+{
+    var output = ConfigurationParser.Parse<MyClass>(fileName: "file.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment);
+    .....
 }
 ```

@@ -13,9 +13,10 @@ namespace Env
             return ConfigureService<T>(hostBuilder);
         }
         
-        public static IWebHostBuilder UseEnvironmentConfiguration<T>(this IWebHostBuilder hostBuilder, string fileName) where T : class
+        public static IWebHostBuilder UseEnvironmentConfiguration<T>(this IWebHostBuilder hostBuilder, string fileName, 
+            ConfigurationTypeEnum configurationTypeEnum = ConfigurationTypeEnum.PreferEnvironment) where T : class
         {
-            return ConfigureService<T>(hostBuilder, fileName);
+            return ConfigureService<T>(hostBuilder, fileName, configurationTypeEnum);
         }
 
         private static IWebHostBuilder ConfigureService<T>(IWebHostBuilder hostBuilder, string fileName = null, 
