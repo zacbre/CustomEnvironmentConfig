@@ -11,8 +11,12 @@ namespace Env.Repositories
         private readonly Dictionary<string, string> _fileValues = new Dictionary<string, string>();
         private readonly char[] trimChars = new[] {' ', '"', '\''};
         private readonly ConfigurationTypeEnum _configurationType;
-        
-        public FileVariableSource(ConfigurationTypeEnum configurationType, string filename = null)
+
+        public FileVariableSource()
+        {
+            _configurationType = ConfigurationTypeEnum.PreferEnvironment;
+        }
+        public FileVariableSource(ConfigurationTypeEnum configurationType = ConfigurationTypeEnum.PreferEnvironment, string filename = null)
         {
             _configurationType = configurationType;
             if (filename != null)

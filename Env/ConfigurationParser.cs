@@ -25,6 +25,31 @@ namespace Env
                 configurationType);
         }
         
+        public static T Parse<T>()
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource()));
+            return parser.ParseConfiguration<T>();
+        }
+        
+        public static T Parse<T>(string fileName)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(ConfigurationTypeEnum.PreferEnvironment, fileName)));
+            return parser.ParseConfiguration<T>();
+        }
+
+        public static T Parse<T>(string fileName, ConfigurationTypeEnum configurationTypeEnum)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationTypeEnum, fileName),
+                configurationTypeEnum));
+            return parser.ParseConfiguration<T>();
+        }
+        
         public static T Parse<T>(IEnvironmentVariableRepository env)
         {
             var parser = new ConfigurationParser(env);
