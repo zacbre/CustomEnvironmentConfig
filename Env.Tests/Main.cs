@@ -250,5 +250,22 @@ namespace Env.Tests
             var output = ConfigurationParser.Parse<ConfigurationClass>(EnvironmentVariableRepository);
             Assert.Equal("fromEnv", output.Test);
         }
+
+        [Fact]
+        public void Check_For_Nullable()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                {"Test", "20"},
+                {"TestBool", "true"}
+            };
+            
+            EnvironmentVariableSource.SetEnvironment(dict);
+            EnvironmentVariableRepository.SetConfigurationType(ConfigurationTypeEnum.PreferEnvironment);
+            var output = ConfigurationParser.Parse<NullableClass>(EnvironmentVariableRepository);
+            Assert.Equal(20, output.Test);
+            Assert.True(output.TestBool);
+            Assert.Null(output.NotRequired);
+        }
     }
 }

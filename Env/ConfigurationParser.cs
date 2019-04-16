@@ -90,9 +90,11 @@ namespace Env
                 {
                     itemName = cAttr.Name;
                     required = cAttr.Required;
-                }   
+                }
+
+                var isNullable = Nullable.GetUnderlyingType(prop.PropertyType);
                 
-                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string))
+                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || isNullable != null)
                 {
                     var val = _environmentVariableRepository.GetEnvironmentVariable(prefix != null ? $"{prefix + "_" ?? ""}{itemName}" : itemName);
                     if (required == ConfigItemRequirement.Required && string.IsNullOrEmpty(val))
@@ -102,8 +104,13 @@ namespace Env
                             $"{type.Name}.{prop.Name} (looking for env '{(prefix != null ? $"{prefix + "_" ?? ""}{itemName}" : itemName)}'.");
                     }
 
+                    if (required == ConfigItemRequirement.NotRequired && string.IsNullOrEmpty(val))
+                    {
+                        continue;
+                    }
+
                     // try to cast env to that type.
-                    var convertedVal = Convert.ChangeType(val, prop.PropertyType);
+                    var convertedVal = Convert.ChangeType(val, (isNullable ?? prop.PropertyType));
 
                     // set property in instance.
                     prop.SetValue(instance, convertedVal);
