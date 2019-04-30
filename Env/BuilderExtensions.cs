@@ -18,6 +18,14 @@ namespace Env
         {
             return ConfigureService<T>(hostBuilder, fileName, configurationTypeEnum);
         }
+        
+        public static IWebHostBuilder UseEnvironmentConfiguration<T>(this IWebHostBuilder hostBuilder, T type) where T : class
+        {
+            return hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton(typeof(T), type);
+            });
+        }
 
         private static IWebHostBuilder ConfigureService<T>(IWebHostBuilder hostBuilder, string fileName = null, 
             ConfigurationTypeEnum configurationType = ConfigurationTypeEnum.PreferEnvironment)
