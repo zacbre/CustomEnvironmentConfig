@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Env.Exceptions;
 using Env.Interfaces;
 using Env.Repositories;
@@ -59,7 +60,7 @@ namespace Env
         public T ParseConfiguration<T>()
         {
             var type = typeof(T);
-            var instance = (T)Activator.CreateInstance(type);
+            var instance = (T)FormatterServices.GetUninitializedObject(type);
             GetProperties(instance, type, null, new Stack<Type>());
 
             return instance;
@@ -118,7 +119,7 @@ namespace Env
                 else
                 {
                     // Create new instance of type.
-                    var subInstance = Activator.CreateInstance(prop.PropertyType);
+                    var subInstance = FormatterServices.GetUninitializedObject(prop.PropertyType);
                     GetProperties(subInstance, prop.PropertyType, $"{(prefix != null ? prefix + "_" : "")}{itemName}", recursive);
                     prop.SetValue(instance, subInstance);
                 }
