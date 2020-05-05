@@ -12,18 +12,14 @@ namespace Env
     public class ConfigItem : Attribute
     {
         public string Name { get; set; }
-        public ConfigItemRequirement Required { get; set; }
+        public bool Required { get; set; }
+        public object Default { get; set; }
         
-        public ConfigItem([CallerMemberName] string propertyName = "ENV", ConfigItemRequirement requirement = ConfigItemRequirement.Required)
+        public ConfigItem([CallerMemberName] string propertyName = "ENV", bool required = true, object @default = null)
         {
             Name = propertyName;
-            Required = requirement;
+            Required = required;
+            Default = @default;
         }
-    }
-
-    public enum ConfigItemRequirement
-    {
-        Required,
-        NotRequired
     }
 }

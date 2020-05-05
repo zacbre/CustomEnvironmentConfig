@@ -267,5 +267,96 @@ namespace Env.Tests
             Assert.True(output.TestBool);
             Assert.Null(output.NotRequired);
         }
+
+        [Fact]
+        public void Can_Write_To_File()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                {"Test", "20"},
+                {"TestBool", "true"}
+            };
+            
+            EnvironmentVariableSource.SetEnvironment(dict);
+            EnvironmentVariableRepository.SetConfigurationType(ConfigurationTypeEnum.PreferEnvironment);
+            var output = ConfigurationParser.Parse<NullableClass>(EnvironmentVariableRepository);
+            
+            ConfigurationWriter.WriteToFile(output, "cwtf.txt", true);
+            
+            // Read in that file.
+            var parsedConfig = ConfigurationParser.Parse<NullableClass>("cwtf.txt");
+            Assert.Equal(20, parsedConfig.Test);
+            Assert.True(parsedConfig.TestBool);
+        }
+        
+        [Fact]
+        public void Can_Write_Recursive_Class_To_File()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                { "Item", "TEST_VAL_ITEM" },
+                { "SubItem_Item", "TEST_VAL_SUBITEM_ITEM" },
+                { "SubItem_SubSubItem_Item", "TEST_VAL_SUBITEM_SUBSUBITEM_ITEM" },
+                { "SubItem_SubSubItem_Bool", "true" },
+                { "SubItem_SubSubItem_Int", "10" },
+                { "SubItem_SubSubItem_Long", "10000000" },
+                { "SubItem_SubSubItem_Double", "2.2" },
+                { "SubItem_SubSubItem_Float", "2.22" }
+            };
+            // Set the environment variables we're going to use.
+            EnvironmentVariableSource.SetEnvironment(dict);
+            
+            var parsed = ConfigurationParser.ParseConfiguration<TestClass>();
+            
+            ConfigurationWriter.WriteToFile(parsed, "cwrctf.txt", true);
+            
+            // Read in that file.
+            var instance = ConfigurationParser.Parse<TestClass>("cwrctf.txt");
+            Assert.Equal("TEST_VAL_ITEM", instance.Item);
+            Assert.Equal("TEST_VAL_SUBITEM_ITEM", instance.SubItem.Item);
+            Assert.Equal("TEST_VAL_SUBITEM_SUBSUBITEM_ITEM", instance.SubItem.SubSubItem.Item);
+            Assert.True(instance.SubItem.SubSubItem.Bool);
+            Assert.Equal(10, instance.SubItem.SubSubItem.Int);
+            Assert.Equal(10000000, instance.SubItem.SubSubItem.Long);
+            Assert.Equal(2.2D, instance.SubItem.SubSubItem.Double);
+            Assert.Equal(2.22F, instance.SubItem.SubSubItem.Float);
+        }
+
+        [Fact]
+        public void Can_Set_Default_Value()
+        {
+            var parsed = ConfigurationParser.ParseConfiguration<DefaultValueClass>();
+            
+            ConfigurationWriter.WriteToFile(parsed, "csdv.txt", true);
+            
+            // Read in that file.
+            var instance = ConfigurationParser.Parse<DefaultValueClass>("csdv.txt");
+            Assert.True(instance.HasDefault);
+            Assert.False(instance.DoesNotHaveDefault);
+        }
+        
+        [Fact]
+        public void Can_Convert_Weird_Value_Types()
+        {
+            var parsed = ConfigurationParser.ParseConfiguration<DefaultValueWeirdTypesClass>();
+            
+            ConfigurationWriter.WriteToFile(parsed, "ccwvt.txt", true);
+            
+            // Read in that file.
+            var instance = ConfigurationParser.Parse<DefaultValueWeirdTypesClass>("ccwvt.txt");
+            Assert.True(instance.HasDefault);
+            Assert.True(instance.DoesNotHaveDefault);
+        }
+        
+        [Fact]
+        public void Cannot_Set_Value_If_Wrong_Type()
+        {
+            var msg = Assert.Throws<FormatException>(() =>
+            {
+                ConfigurationParser.ParseConfiguration<DefaultValueBrokenClass>();
+            });
+
+            Assert.Contains("Input string was not in a correct format", msg.Message);
+        }
     }
 }

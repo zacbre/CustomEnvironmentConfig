@@ -103,12 +103,33 @@ By default, items are required.
 ```
 public class MyConfiguration
 {
-    [ConfigItem(Required = ConfigItemRequirement.NotRequired)]
+    [ConfigItem(Required = false)]
     public bool NotRequiredItem { get; set; }
     // OR
-    [ConfigItem(Name = "MyOtherItem", Required = ConfigItemRequirement.Required)]
+    [ConfigItem(Name = "MyOtherItem", Required = true)]
     public int OtherItem { get; set; }
 }
+```
+
+If you want to specify a default value for an item if it's not required:
+```
+public class MyConfiguration
+{
+    [ConfigItem(Required = false, Default = true)]
+    public bool NotRequiredItem { get; set; }
+    // OR
+    [ConfigItem(Required = false, Default = 123)]
+    public int OtherItem { get; set; }
+}
+```
+Conversions across types are supported for defaults, for instance:
+```
+(string)"123" => (int)123
+(string)"true" => (bool)True
+(string)"false" => (bool)False
+(int)1 => (bool)True
+(int)0 => (bool)False
+...etc
 ```
 
 ## From an Env File:

@@ -5,7 +5,7 @@ namespace Env.Tests.Configuration
         public int? Test { get; set; }
         public bool? TestBool { get; set; }
         
-        [ConfigItem(Required = ConfigItemRequirement.NotRequired)]
+        [ConfigItem(Required = false)]
         public int? NotRequired { get; set; }
     }
 }

@@ -78,7 +78,8 @@ namespace Env
                 }
 
                 var itemName = prop.Name;
-                var required = ConfigItemRequirement.Required;
+                var required = true;
+                object @default = null;
                 
                 var configItemAttr = prop.GetCustomAttributes(true).FirstOrDefault(a => a.GetType() == typeof(ConfigItem));
                 var ignoreConfigItemAttr = prop.GetCustomAttributes(true).FirstOrDefault(a => a.GetType() == typeof(IgnoreConfigItem));
@@ -91,6 +92,7 @@ namespace Env
                 {
                     itemName = cAttr.Name;
                     required = cAttr.Required;
+                    @default = cAttr.Default;
                 }
 
                 var isNullable = Nullable.GetUnderlyingType(prop.PropertyType);
@@ -98,15 +100,20 @@ namespace Env
                 if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || isNullable != null)
                 {
                     var val = _environmentVariableRepository.GetEnvironmentVariable(prefix != null ? $"{prefix + "_" ?? ""}{itemName}" : itemName);
-                    if (required == ConfigItemRequirement.Required && string.IsNullOrEmpty(val))
+                    if (required && string.IsNullOrEmpty(val))
                     {
                         throw new KeyNotFoundException(
                             $"[CustomEnvironmentConfig] Required configuration environment variable is empty: " +
                             $"{type.Name}.{prop.Name} (looking for env '{(prefix != null ? $"{prefix + "_" ?? ""}{itemName}" : itemName)}'.");
                     }
 
-                    if (required == ConfigItemRequirement.NotRequired && string.IsNullOrEmpty(val))
+                    if (!required && string.IsNullOrEmpty(val))
                     {
+                        if (@default != null)
+                        {
+                            var conv = Convert.ChangeType(@default, (isNullable ?? prop.PropertyType));
+                            prop.SetValue(instance, conv);
+                        }
                         continue;
                     }
 

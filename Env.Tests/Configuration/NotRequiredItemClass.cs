@@ -4,7 +4,7 @@ namespace Env.Tests.Configuration
     {
         public string RequiredItem { get; set; }
         
-        [ConfigItem(Required = ConfigItemRequirement.NotRequired)]
+        [ConfigItem(Required = false)]
         public string NotRequiredItem { get; set; }
     }
 }
