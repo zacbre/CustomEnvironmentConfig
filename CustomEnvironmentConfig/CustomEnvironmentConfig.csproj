@@ -6,11 +6,11 @@
         <Title>CustomEnvironmentConfig</Title>
         <Authors>ThrDev</Authors>
         <Description>Enables binding environment variables to classes.</Description>
-        <PackageProjectUrl>https://github.com/ThrDev/dotnetcore-custom-env</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/ThrDev/CustomEnvironmentConfig/</PackageProjectUrl>
         <PackageLicense>https://github.com/ThrDev/dotnetcore-custom-env</PackageLicense>
-        <RepositoryUrl>https://github.com/ThrDev/dotnetcore-custom-env</RepositoryUrl>
+        <RepositoryUrl>https://github.com/ThrDev/CustomEnvironmentConfig/</RepositoryUrl>
         <PackageVersion>1.4</PackageVersion>
-        <PackageLicenseUrl>https://raw.githubusercontent.com/ThrDev/dotnetcore-custom-env/master/LICENSE</PackageLicenseUrl>
+        <PackageLicenseUrl>https://github.com/ThrDev/CustomEnvironmentConfig/master/LICENSE</PackageLicenseUrl>
         <LangVersion>8</LangVersion>
         <Nullable>enable</Nullable>
         <TargetFramework>netstandard2.1</TargetFramework>
