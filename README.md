@@ -12,7 +12,7 @@ Subclass_MyConfigSubItem=Test Subitem Value
 ```
 
 **(MyConfiguration.cs)**
-```
+```c#
 public class MyConfiguration 
 {
     public string MyConfigItem { get; set; }
@@ -27,7 +27,7 @@ public class MyConfigSubClass
 ```
 
 **(Program.cs)**
-```
+```c#
 public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                    .UseEnvironmentConfiguration<MyConfiguration>()               
@@ -35,7 +35,7 @@ public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
 ```
 
 **(Startup.cs)**
-```
+```c#
 public class Startup 
 {
     private readonly MyConfiguration _configuration;
@@ -58,41 +58,41 @@ public class Startup
 If you want, you can re-map the name of the items using [ConfigItem]:
 (Do note, [ConfigItem] is not required and only needed if you want to set the requirement policy of a property
 or change the name of the environment variable)
-```
+```c#
 public class MyConfiguration
 {
-    [ConfigItem("MyItem")]
+    [ConfigurationItem("MyItem")]
     public bool Item { get; set; }
     // OR
-    [ConfigItem(Name = "MyOtherItem")]
+    [ConfigurationItem(Name = "MyOtherItem")]
     public int OtherItem { get; set; }
     
-    [ConfigItem("Test")
+    [ConfigurationItem("Test")
     public SubConfiguration MySubClass { get; set; }
 }
 public class SubConfiguration
 {
-    [ConfigItem]
+    [ConfigurationItem]
     public bool SubItem { get; set; }
 }
 ```
 
 If you want to ignore parsing certain properties in a class, you can use [IgnoreConfigItem]:
-```
+```c#
 public class MyConfiguration
 {
-    [ConfigItem("MyItem")]
+    [ConfigurationItem("MyItem")]
     public bool Item { get; set; }
     
     public int OtherItem { get; set; }
     
-    [IgnoreConfigItem]
+    [ConfigurationItem(Ignore = true)]
     public SubConfiguration MySubClass { get; set; }
 }
 ```
 
 The environment variables for this would look like as follows:
-```
+```c#
 MyItem=Value
 MyOtherItem=Value
 Test_SubItem=Value
@@ -100,30 +100,30 @@ Test_SubItem=Value
 
 You can also set if the item is required to be set in the environment or not.
 By default, items are required.
-```
+```c#
 public class MyConfiguration
 {
-    [ConfigItem(Required = false)]
+    [ConfigurationItem(Required = false)]
     public bool NotRequiredItem { get; set; }
     // OR
-    [ConfigItem(Name = "MyOtherItem", Required = true)]
+    [ConfigurationItem(Name = "MyOtherItem", Required = true)]
     public int OtherItem { get; set; }
 }
 ```
 
 If you want to specify a default value for an item if it's not required:
-```
+```c#
 public class MyConfiguration
 {
-    [ConfigItem(Required = false, Default = true)]
+    [ConfigurationItem(Required = false, Default = true)]
     public bool NotRequiredItem { get; set; }
     // OR
-    [ConfigItem(Required = false, Default = 123)]
+    [ConfigurationItem(Required = false, Default = 123)]
     public int OtherItem { get; set; }
 }
 ```
 Conversions across types are supported for defaults, for instance:
-```
+```c#
 (string)"123" => (int)123
 (string)"true" => (bool)True
 (string)"false" => (bool)False
@@ -135,7 +135,7 @@ Conversions across types are supported for defaults, for instance:
 ## From an Env File:
 
 Most of this applies from above, except instead your IWebHostBuilder would look like:
-```
+```c#
 // Program.cs
 public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
@@ -146,7 +146,7 @@ public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
 ## Non-DI:
 
 To parse environment variables directly:
-```
+```c#
 public void MyFunction() 
 {
     var output = ConfigurationParser.Parse<MyClass>();
@@ -155,7 +155,7 @@ public void MyFunction()
 ```
 
 To parse from an environment file:
-```
+```c#
 public void MyFunction() 
 {
     var output = ConfigurationParser.Parse<MyClass>(fileName: "file.env");
@@ -175,7 +175,7 @@ The default functionality is Prefer Environment over File.
 To use this functionality, there's two ways, both DI and non-DI:
 
 ### DI
-```
+```c#
 // Program.cs
 public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
@@ -183,10 +183,26 @@ public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             .....
 ```
 ### Non-DI
-```
+```c#
 public void MyFunction() 
 {
     var output = ConfigurationParser.Parse<MyClass>(fileName: "file.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment);
+    .....
+}
+```
+### Manual-DI (for non asp.net core projects)
+```c#
+public void Main() 
+{
+    var servicesBuilder = new ServiceCollection();
+
+    var output = ConfigurationParser.Parse<MyClass>(fileName: "file.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment);
+    servicesBuilder.AddSingleton(output);
+
+    var services = servicesBuilder.BuildServiceProvider();
+
+    // Access MyClass in constructor or like below
+    var config = services.GetService<MyClass>();
     .....
 }
 ```
