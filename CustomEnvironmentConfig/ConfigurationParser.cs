@@ -95,8 +95,8 @@ namespace CustomEnvironmentConfig
                 }
 
                 var isNullable = Nullable.GetUnderlyingType(prop.PropertyType);
-                
-                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || isNullable is {})
+
+                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || prop.PropertyType.IsEnum || isNullable is {})
                 {
                     var val = _environmentVariableRepository.GetEnvironmentVariable(prefix is {} ? $"{prefix + "_" ?? ""}{itemName}" : itemName);
                     if (required && string.IsNullOrEmpty(val))
@@ -113,6 +113,18 @@ namespace CustomEnvironmentConfig
                             var conv = Convert.ChangeType(@default, (isNullable ?? prop.PropertyType));
                             prop.SetValue(instance, conv);
                         }
+                        continue;
+                    }
+
+                    if (prop.PropertyType.IsEnum)
+                    {
+                        if (!Enum.TryParse(prop.PropertyType, val, out var parsedEnumVal))
+                        {
+                            throw new Exception($"Could not parse '{(prefix is {} ? $"{prefix + "_" ?? ""}{itemName}" : itemName)}' as {type.Name}.{prop.Name}!");
+                        }
+                        
+                        prop.SetValue(instance, parsedEnumVal);
+
                         continue;
                     }
 

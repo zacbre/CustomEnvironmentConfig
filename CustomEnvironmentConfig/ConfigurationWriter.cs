@@ -50,7 +50,7 @@ namespace CustomEnvironmentConfig
 
                 var isNullable = Nullable.GetUnderlyingType(prop.PropertyType);
                 
-                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || isNullable is {})
+                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || prop.PropertyType.IsEnum || isNullable is {})
                 {
                     var value = prop.GetValue(instance);
 

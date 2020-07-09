@@ -3,7 +3,13 @@ Enables binding environment variables and/or environment files to classes.
 
 [![Nuget](https://img.shields.io/nuget/v/CustomEnvironmentConfig.svg)](https://www.nuget.org/packages/CustomEnvironmentConfig/)
 
-## Example
+## Changelog
+```
+07/08/2020 [v1.4.1]
+- Added support for enums.
+```
+
+## Examples
 
 **(.env [environment variables])**
 ```

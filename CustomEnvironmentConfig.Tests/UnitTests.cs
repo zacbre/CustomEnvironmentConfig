@@ -331,6 +331,14 @@ namespace CustomEnvironmentConfig.Tests
             Assert.True(instance.HasDefault);
             Assert.False(instance.DoesNotHaveDefault);
         }
+
+        [Fact]
+        public void Can_Set_Default_String_Value()
+        {
+            var parsed = ConfigurationParser.ParseConfiguration<DefaultValueStringClass>();
+            
+            Assert.Equal("i have a value!", parsed.DoIHaveAValue);
+        }
         
         [Fact]
         public void Can_Convert_Weird_Value_Types()
@@ -354,6 +362,49 @@ namespace CustomEnvironmentConfig.Tests
             });
 
             Assert.Contains("Input string was not in a correct format", msg.Message);
+        }
+
+        [Fact]
+        public void Can_Read_And_Write_And_Parse_Enums()
+        {
+            var config = new EnumClass
+            {
+                Enum = TestEnum.Item2,
+            };
+
+            ConfigurationWriter.WriteToFile(config, "crawape.txt", true);
+            
+            var configParsed = ConfigurationParser.Parse<EnumClass>("crawape.txt");
+            Assert.Equal(TestEnum.Item2, configParsed.Enum);
+        }
+        
+        [Fact]
+        public void Can_Read_Default_Enum_Values()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                { "Enum", "Item2" },
+            };
+            // Set the environment variables we're going to use.
+            EnvironmentVariableSource.SetEnvironment(dict);
+            
+            var configParsed = ConfigurationParser.ParseConfiguration<EnumClass>();
+            Assert.Equal(TestEnum.Item1, configParsed.NotRequired);
+            Assert.Equal(TestEnum.Item2, configParsed.Enum);
+        }
+
+        [Fact]
+        public void Throws_When_Enum_Fails_To_Parse()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                { "Enum", "Item3" },
+            };
+            // Set the environment variables we're going to use.
+            EnvironmentVariableSource.SetEnvironment(dict);
+
+            var msg = Assert.Throws<Exception>(() => ConfigurationParser.ParseConfiguration<EnumClass>());
+            Assert.Contains("Could not parse", msg.Message);
         }
     }
 }

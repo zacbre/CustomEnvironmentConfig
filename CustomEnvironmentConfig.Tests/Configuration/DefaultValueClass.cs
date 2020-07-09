@@ -17,6 +17,12 @@ namespace CustomEnvironmentConfig.Tests.Configuration
         [ConfigurationItem(Default = "true", Required = false)]
         public bool DoesNotHaveDefault { get; set; }
     }
+
+    public class DefaultValueStringClass
+    {
+        [ConfigurationItem(Default = "i have a value!", Required = false)]
+        public string DoIHaveAValue { get; set; }
+    }
     
     public class DefaultValueBrokenClass
     {
