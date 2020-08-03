@@ -406,5 +406,15 @@ namespace CustomEnvironmentConfig.Tests
             var msg = Assert.Throws<Exception>(() => ConfigurationParser.ParseConfiguration<EnumClass>());
             Assert.Contains("Could not parse", msg.Message);
         }
+
+        [Fact]
+        public void Can_Default_All_Types()
+        {
+            var parsed = ConfigurationParser.ParseConfiguration<AllDefaultTestsClass>();
+
+            ConfigurationWriter.WriteToFile(parsed, "cdat.txt", true);
+            
+            Assert.Equal(4, parsed.IntDefault);
+        }
     }
 }

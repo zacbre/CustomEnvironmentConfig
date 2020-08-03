@@ -61,8 +61,8 @@ public class Startup
 }
 ```
 
-If you want, you can re-map the name of the items using [ConfigItem]:
-(Do note, [ConfigItem] is not required and only needed if you want to set the requirement policy of a property
+If you want, you can re-map the name of the items using [ConfigurationItem]:
+(Do note, [ConfigurationItem] is not required and only needed if you want to set the requirement policy of a property
 or change the name of the environment variable)
 ```c#
 public class MyConfiguration
@@ -83,7 +83,7 @@ public class SubConfiguration
 }
 ```
 
-If you want to ignore parsing certain properties in a class, you can use [IgnoreConfigItem]:
+If you want to ignore parsing certain properties in a class, you can use [ConfigurationItem(Ignore = true)]:
 ```c#
 public class MyConfiguration
 {

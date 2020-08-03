@@ -32,4 +32,10 @@ namespace CustomEnvironmentConfig.Tests.Configuration
         [ConfigurationItem(Default = -23451, Required = false)]
         public bool DoesNotHaveDefault { get; set; }
     }
+
+    public class AllDefaultTestsClass
+    {
+        [ConfigurationItem(Default = 4, Required = false)]
+        public int IntDefault { get; set; }
+    }
 }
