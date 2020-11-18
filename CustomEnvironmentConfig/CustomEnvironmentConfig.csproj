@@ -9,18 +9,18 @@
         <PackageProjectUrl>https://github.com/ThrDev/CustomEnvironmentConfig/</PackageProjectUrl>
         <PackageLicense>https://github.com/ThrDev/dotnetcore-custom-env</PackageLicense>
         <RepositoryUrl>https://github.com/ThrDev/CustomEnvironmentConfig/</RepositoryUrl>
-        <PackageVersion>1.4.1</PackageVersion>
+        <PackageVersion>1.5.0</PackageVersion>
         <PackageLicenseUrl>https://github.com/ThrDev/CustomEnvironmentConfig/master/LICENSE</PackageLicenseUrl>
         <LangVersion>8</LangVersion>
         <Nullable>enable</Nullable>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
         <PackageTags>environment, configuration</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.10" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.10" />
     </ItemGroup>
 
 </Project>

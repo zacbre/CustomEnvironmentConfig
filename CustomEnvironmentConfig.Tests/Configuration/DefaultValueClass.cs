@@ -21,7 +21,7 @@ namespace CustomEnvironmentConfig.Tests.Configuration
     public class DefaultValueStringClass
     {
         [ConfigurationItem(Default = "i have a value!", Required = false)]
-        public string DoIHaveAValue { get; set; }
+        public string? DoIHaveAValue { get; set; }
     }
     
     public class DefaultValueBrokenClass
