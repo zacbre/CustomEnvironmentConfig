@@ -11,11 +11,14 @@ namespace CustomEnvironmentConfig
         public bool Ignore { get; set; }
         public object? Default { get; set; }
         
-        public ConfigurationItem([CallerMemberName] string propertyName = "ENV", bool required = true, bool ignore = false, object? @default = null)
+        public bool Encrypt { get; set; }
+        
+        public ConfigurationItem([CallerMemberName] string propertyName = "ENV", bool required = true, bool ignore = false, bool encrypt = false, object? @default = null)
         {
             Name = propertyName;
             Required = required;
             Ignore = ignore;
+            Encrypt = encrypt;
             Default = @default;
         }
     }

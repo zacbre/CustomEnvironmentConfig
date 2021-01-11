@@ -14,15 +14,28 @@ namespace CustomEnvironmentConfig
             var configurationWriter = new ConfigurationWriter();
             configurationWriter.Write(src, filePath, generateComments);
         }
+        
+        public static void WriteToFile<T>(T src, string filePath, Func<string, string, string> encryptHandler, bool generateComments = false)
+        {
+            var configurationWriter = new ConfigurationWriter();
+            configurationWriter.Write(src, filePath, encryptHandler, generateComments);
+        }
 
         public void Write<T>(T src, string filePath, bool generateComments = false)
         {
             var file = File.CreateText(filePath);
-            WriteProperties(src, typeof(T), null, new Stack<Type>(), file, generateComments);
+            WriteProperties(src, typeof(T), null, new Stack<Type>(), file, encryptHandler: null, generateComments);
+            file.Close();
+        }
+
+        public void Write<T>(T src, string filePath, Func<string, string, string> encryptHandler, bool generateComments = false)
+        {
+            var file = File.CreateText(filePath);
+            WriteProperties(src, typeof(T), null, new Stack<Type>(), file, encryptHandler, generateComments);
             file.Close();
         }
         
-        private void WriteProperties<T>(T instance, Type type, string? prefix, Stack<Type> recursive, StreamWriter fileStream, bool generateComments)
+        private void WriteProperties<T>(T instance, Type type, string? prefix, Stack<Type> recursive, StreamWriter fileStream, Func<string,string,string>? encryptHandler, bool generateComments)
         {
             Push(recursive, type);
 
@@ -57,9 +70,15 @@ namespace CustomEnvironmentConfig
                     if (value is {})
                     {
                         // try to cast env to that type.
-                        var convertedVal = Convert.ChangeType(value, typeof(string));
+                        string? convertedVal = (string?)Convert.ChangeType(value, typeof(string));
+                        
+                        // if valueHandler is set, process using this method, to encrypt values, etc.
+                        if (encryptHandler is {} && convertedVal is {} && configItemAttr is ConfigurationItem { Encrypt: true })
+                        {
+                            convertedVal = encryptHandler($"{(prefix is { } ? $"{prefix + "_"}{itemName}" : itemName)}", convertedVal);
+                        }
 
-                        fileStream.WriteLine($"{(prefix is {} ? $"{prefix + "_" ?? ""}{itemName}" : itemName)} = {convertedVal}");
+                        fileStream.WriteLine($"{(prefix is {} ? $"{prefix + "_"}{itemName}" : itemName)} = {convertedVal}");
                     }
                     else
                     {
@@ -87,7 +106,7 @@ namespace CustomEnvironmentConfig
                     fileStream.Write($"#\n# {(prefix is {} ? prefix + "_" : "")}{itemName}\n#\n");
                 }
                 
-                WriteProperties(subInstance, item.Value.PropertyType, $"{(prefix is {} ? prefix + "_" : "")}{itemName}", recursive, fileStream, generateComments);
+                WriteProperties(subInstance, item.Value.PropertyType, $"{(prefix is {} ? prefix + "_" : "")}{itemName}", recursive, fileStream, encryptHandler, generateComments);
             }
 
             recursive.Pop();

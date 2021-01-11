@@ -416,5 +416,45 @@ namespace CustomEnvironmentConfig.Tests
             
             Assert.Equal(4, parsed.IntDefault);
         }
+
+        [Fact]
+        public void Can_Encrypt_And_Decrypt_Text()
+        {
+            var item = new EncryptedClass
+            {
+                Item1 = "Test string",
+                Item2 = 65535,
+                Item3 = true
+            };
+
+            var writer = new ConfigurationWriter();
+            var encryptHandler = new Func<string, string, string>((name, value) =>
+            {
+                return name switch
+                {
+                    "Item1" => "xxxxx",
+                    "Item2" => "11111",
+                    "Item3" => "tralse"
+                };
+            });
+
+            writer.Write(item, "ut_ceadt.txt", encryptHandler, true);
+
+            var decryptHandler = new Func<string, string, string>((name, value) =>
+            {
+                return name switch
+                {
+                    "Item1" => "Item1Value",
+                    "Item2" => "12345",
+                    "Item3" => "false"
+                };
+            });
+
+            var config = ConfigurationParser.Parse<EncryptedClass>("ut_ceadt.txt", ConfigurationTypeEnum.FileOnly, decryptHandler);
+            
+            Assert.Equal("Item1Value", config.Item1);
+            Assert.Equal(12345, config.Item2);
+            Assert.False(config.Item3);
+        }
     }
 }

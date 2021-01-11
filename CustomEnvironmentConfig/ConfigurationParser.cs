@@ -51,6 +51,15 @@ namespace CustomEnvironmentConfig
             return parser.ParseConfiguration<T>();
         }
         
+        public static T Parse<T>(string fileName, ConfigurationTypeEnum configurationTypeEnum, Func<string,string,string> decryptHandler)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationTypeEnum, fileName),
+                configurationTypeEnum));
+            return parser.ParseConfiguration<T>(decryptHandler);
+        }
+
         public static T Parse<T>(IEnvironmentVariableRepository env)
         {
             var parser = new ConfigurationParser(env);
@@ -59,14 +68,19 @@ namespace CustomEnvironmentConfig
         
         public T ParseConfiguration<T>()
         {
+            return ParseConfiguration<T>(decryptHandler: null);
+        }
+        
+        public T ParseConfiguration<T>(Func<string,string,string>? decryptHandler)
+        {
             var type = typeof(T);
             var instance = (T)FormatterServices.GetUninitializedObject(type);
-            GetProperties(instance, type, null, new Stack<Type>());
+            GetProperties(instance, type, null, new Stack<Type>(), decryptHandler);
 
             return instance;
         }
         
-        private void GetProperties<T>(T instance, Type type, string? prefix, Stack<Type> recursive)
+        private void GetProperties<T>(T instance, Type type, string? prefix, Stack<Type> recursive, Func<string,string,string>? decryptHandler)
         {
             Push(recursive, type);
             
@@ -127,10 +141,15 @@ namespace CustomEnvironmentConfig
 
                         continue;
                     }
+                    
+                    if (decryptHandler is {} && val is {} && configItemAttr is ConfigurationItem { Encrypt: true })
+                    {
+                        val = decryptHandler($"{(prefix is { } ? $"{prefix + "_"}{itemName}" : itemName)}", val);
+                    }
 
                     // try to cast env to that type.
                     var convertedVal = Convert.ChangeType(val, (isNullable ?? prop.PropertyType));
-
+                    
                     // set property in instance.
                     prop.SetValue(instance, convertedVal);
                 }
@@ -138,7 +157,7 @@ namespace CustomEnvironmentConfig
                 {
                     // Create new instance of type.
                     var subInstance = FormatterServices.GetUninitializedObject(prop.PropertyType);
-                    GetProperties(subInstance, prop.PropertyType, $"{(prefix is {} ? prefix + "_" : "")}{itemName}", recursive);
+                    GetProperties(subInstance, prop.PropertyType, $"{(prefix is {} ? prefix + "_" : "")}{itemName}", recursive, decryptHandler);
                     prop.SetValue(instance, subInstance);
                 }
             }
