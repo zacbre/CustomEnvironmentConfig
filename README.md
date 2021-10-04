@@ -5,11 +5,10 @@ Enables binding environment variables and/or environment files to classes.
 
 ## Changelog
 ```
-10/04/2021 [v1.6.2]
-- Add builder extensions for POSIX.
-10/04/2021 [v1.6.1]
+10/04/2021 [v1.6.3]
 - Add support for POSIX style environment variables.
-10/04/2021 [v1.6.0]
+- Add builder extensions for POSIX.
+11/20/2020 [v1.6.0]
 - Add support for encrypting fields.
 07/08/2020 [v1.5.0]
 - Updated to netcoreapp3.1.
@@ -234,4 +233,12 @@ public void MyFunction()
     var output = ConfigurationParser.ParsePosix<MyClass>(fileName: "file.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment);
     .....
 }
+```
+or builder syntax:
+```c#
+// Program.cs
+public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                   .UseEnvironmentConfigurationPosix<MyConfiguration>(fileName: "filename.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment)               
+            .....
 ```

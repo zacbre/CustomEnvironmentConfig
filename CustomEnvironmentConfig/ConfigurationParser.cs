@@ -34,12 +34,28 @@ namespace CustomEnvironmentConfig
             return parser.ParseConfiguration<T>();
         }
         
+        public static T ParsePosix<T>()
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource()));
+            return parser.ParseConfigurationPosix<T>();
+        }
+        
         public static T Parse<T>(string fileName)
         {
             var parser = new ConfigurationParser(new EnvironmentVariableRepository(
                 new EnvironmentVariableSource(), 
                 new FileVariableSource(ConfigurationTypeEnum.PreferEnvironment, fileName)));
             return parser.ParseConfiguration<T>();
+        }
+        
+        public static T ParsePosix<T>(string fileName)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(ConfigurationTypeEnum.PreferEnvironment, fileName)));
+            return parser.ParseConfigurationPosix<T>();
         }
 
         public static T Parse<T>(string fileName, ConfigurationTypeEnum configurationTypeEnum)
@@ -49,6 +65,15 @@ namespace CustomEnvironmentConfig
                 new FileVariableSource(configurationTypeEnum, fileName),
                 configurationTypeEnum));
             return parser.ParseConfiguration<T>();
+        }
+        
+        public static T ParsePosix<T>(string fileName, ConfigurationTypeEnum configurationTypeEnum)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationTypeEnum, fileName),
+                configurationTypeEnum));
+            return parser.ParseConfigurationPosix<T>();
         }
         
         public static T Parse<T>(string fileName, ConfigurationTypeEnum configurationTypeEnum, Func<string,string,string> decryptHandler)

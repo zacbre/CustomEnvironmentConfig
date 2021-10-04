@@ -32,6 +32,14 @@ namespace CustomEnvironmentConfig
             return ConfigureServicePosix<T>(hostBuilder);
         }
         
+        public static IWebHostBuilder UseEnvironmentConfigurationPosix<T>(this IWebHostBuilder hostBuilder, T type) where T : class
+        {
+            return hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton(typeof(T), type);
+            });
+        }
+        
         public static IWebHostBuilder UseEnvironmentConfigurationPosix<T>(this IWebHostBuilder hostBuilder, string? fileName, 
                                                                      ConfigurationTypeEnum configurationTypeEnum = ConfigurationTypeEnum.PreferEnvironment) where T : class
         {
