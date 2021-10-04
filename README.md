@@ -5,6 +5,8 @@ Enables binding environment variables and/or environment files to classes.
 
 ## Changelog
 ```
+10/04/2021 [v1.6.2]
+- Add builder extensions for POSIX.
 10/04/2021 [v1.6.1]
 - Add support for POSIX style environment variables.
 10/04/2021 [v1.6.0]
@@ -219,7 +221,7 @@ public void Main()
 }
 ```
 
-### POSIX style variables
+## POSIX style variables
 ```c#
 public void MyFunction() 
 {

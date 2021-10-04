@@ -9,7 +9,7 @@
         <PackageProjectUrl>https://github.com/zacbrec/CustomEnvironmentConfig/</PackageProjectUrl>
         <PackageLicense>https://github.com/ThrDev/dotnetcore-custom-env</PackageLicense>
         <RepositoryUrl>https://github.com/zacbrec/CustomEnvironmentConfig/</RepositoryUrl>
-        <PackageVersion>1.6.1</PackageVersion>
+        <PackageVersion>1.6.2</PackageVersion>
         <PackageLicenseUrl>https://github.com/zacbrec/CustomEnvironmentConfig/master/LICENSE</PackageLicenseUrl>
         <LangVersion>8</LangVersion>
         <Nullable>enable</Nullable>
