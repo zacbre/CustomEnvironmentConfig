@@ -14,7 +14,7 @@
         <LangVersion>8</LangVersion>
         <Nullable>enable</Nullable>
         <PackageTags>environment, configuration</PackageTags>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <TargetFrameworks>net5.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
