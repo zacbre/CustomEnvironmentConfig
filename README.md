@@ -5,6 +5,12 @@ Enables binding environment variables and/or environment files to classes.
 
 ## Changelog
 ```
+10/04/2021 [v1.6.1]
+- Add support for POSIX style environment variables.
+10/04/2021 [v1.6.0]
+- Add support for encrypting fields.
+07/08/2020 [v1.5.0]
+- Updated to netcoreapp3.1.
 07/08/2020 [v1.4.1]
 - Added support for enums.
 ```
@@ -209,6 +215,21 @@ public void Main()
 
     // Access MyClass in constructor or like below
     var config = services.GetService<MyClass>();
+    .....
+}
+```
+
+### POSIX style variables
+```c#
+public void MyFunction() 
+{
+    var output = ConfigurationParser.ParseConfigurationPosix<MyClass>();
+    .....
+}
+// or with options
+public void MyFunction() 
+{
+    var output = ConfigurationParser.ParsePosix<MyClass>(fileName: "file.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment);
     .....
 }
 ```

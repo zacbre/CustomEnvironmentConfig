@@ -57,13 +57,28 @@ namespace CustomEnvironmentConfig
                 new EnvironmentVariableSource(), 
                 new FileVariableSource(configurationTypeEnum, fileName),
                 configurationTypeEnum));
-            return parser.ParseConfiguration<T>(decryptHandler);
+            return parser.ParseConfiguration<T>(decryptHandler: decryptHandler);
+        }
+        
+        public static T ParsePosix<T>(string fileName, ConfigurationTypeEnum configurationTypeEnum, Func<string,string,string> decryptHandler)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationTypeEnum, fileName),
+                configurationTypeEnum));
+            return parser.ParseConfigurationPosix<T>(decryptHandler: decryptHandler, posix: true);
         }
 
         public static T Parse<T>(IEnvironmentVariableRepository env)
         {
             var parser = new ConfigurationParser(env);
             return parser.ParseConfiguration<T>();
+        }
+        
+        public static T ParsePosix<T>(IEnvironmentVariableRepository env)
+        {
+            var parser = new ConfigurationParser(env);
+            return parser.ParseConfigurationPosix<T>();
         }
         
         public T ParseConfiguration<T>()
@@ -75,12 +90,27 @@ namespace CustomEnvironmentConfig
         {
             var type = typeof(T);
             var instance = (T)FormatterServices.GetUninitializedObject(type);
-            GetProperties(instance, type, null, new Stack<Type>(), decryptHandler);
+            GetProperties(instance, type, null, new Stack<Type>(), decryptHandler, posix: null);
 
             return instance;
         }
         
-        private void GetProperties<T>(T instance, Type type, string? prefix, Stack<Type> recursive, Func<string,string,string>? decryptHandler)
+        public T ParseConfigurationPosix<T>()
+        {
+            return ParseConfigurationPosix<T>(decryptHandler: null, posix: true);
+        }
+        
+        public T ParseConfigurationPosix<T>(Func<string,string,string>? decryptHandler, bool? posix)
+        {
+            var type = typeof(T);
+            var instance = (T)FormatterServices.GetUninitializedObject(type);
+            GetProperties(instance, type, null, new Stack<Type>(), decryptHandler, posix: posix);
+
+            return instance;
+        }
+
+        private void GetProperties<T>(T instance, Type type, string? prefix, Stack<Type> recursive, 
+                                      Func<string,string,string>? decryptHandler, bool? posix)
         {
             Push(recursive, type);
             
@@ -91,14 +121,14 @@ namespace CustomEnvironmentConfig
                     continue;
                 }
 
-                var itemName = prop.Name;
+                var itemName = posix is true ? prop.Name.ToUpper() : prop.Name;
                 var required = true;
                 object? @default = null;
                 
                 var configItemAttr = prop.GetCustomAttributes(true).FirstOrDefault(a => a.GetType() == typeof(ConfigurationItem));
                 if (configItemAttr is ConfigurationItem cAttr)
                 {
-                    itemName = cAttr.Name;
+                    itemName = posix is true ? cAttr.Name.ToUpper() : cAttr.Name;
                     required = cAttr.Required;
                     @default = cAttr.Default;
 
@@ -134,7 +164,9 @@ namespace CustomEnvironmentConfig
                     {
                         if (!Enum.TryParse(prop.PropertyType, val, out var parsedEnumVal))
                         {
-                            throw new Exception($"Could not parse '{(prefix is {} ? $"{prefix + "_" ?? ""}{itemName}" : itemName)}' as {type.Name}.{prop.Name}!");
+                            var name = posix is true ? type.Name.ToUpper() : type.Name;
+                            var propName = posix is true ? prop.Name.ToUpper() : prop.Name;
+                            throw new Exception($"Could not parse '{(prefix is {} ? $"{prefix + "_" ?? ""}{itemName}" : itemName)}' as {name}.{propName}!");
                         }
                         
                         prop.SetValue(instance, parsedEnumVal);
@@ -157,7 +189,7 @@ namespace CustomEnvironmentConfig
                 {
                     // Create new instance of type.
                     var subInstance = FormatterServices.GetUninitializedObject(prop.PropertyType);
-                    GetProperties(subInstance, prop.PropertyType, $"{(prefix is {} ? prefix + "_" : "")}{itemName}", recursive, decryptHandler);
+                    GetProperties(subInstance, prop.PropertyType, $"{(prefix is {} ? prefix + "_" : "")}{itemName}", recursive, decryptHandler, posix: posix);
                     prop.SetValue(instance, subInstance);
                 }
             }

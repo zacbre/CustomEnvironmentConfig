@@ -434,7 +434,8 @@ namespace CustomEnvironmentConfig.Tests
                 {
                     "Item1" => "xxxxx",
                     "Item2" => "11111",
-                    "Item3" => "tralse"
+                    "Item3" => "tralse",
+                    _       => throw new ArgumentOutOfRangeException(nameof(name), name, null)
                 };
             });
 
@@ -446,7 +447,8 @@ namespace CustomEnvironmentConfig.Tests
                 {
                     "Item1" => "Item1Value",
                     "Item2" => "12345",
-                    "Item3" => "false"
+                    "Item3" => "false",
+                    _       => throw new ArgumentOutOfRangeException(nameof(name), name, null)
                 };
             });
 
@@ -455,6 +457,42 @@ namespace CustomEnvironmentConfig.Tests
             Assert.Equal("Item1Value", config.Item1);
             Assert.Equal(12345, config.Item2);
             Assert.False(config.Item3);
+        }
+        
+        [Fact]
+        public void Can_Read_Posix_Environment_Names_And_Values()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                { "ITEM", "Test" },
+                { "SUBITEM_ITEM", "Test1" },
+                { "SUBITEM_SUBSUBITEM_ITEM", "Test2" },
+                { "SUBITEM_SUBSUBITEM_LONG", "5000000" },
+                { "SUBITEM_SUBSUBITEM_FLOAT", "6.002" },
+                { "SUBITEM_SUBSUBITEM_DOUBLE", "6.00" },
+                { "SUBITEM_SUBSUBITEM_BOOL", "true" },
+                { "SUBITEM_SUBSUBITEM_INT", "42" },
+            };
+            // Set the environment variables we're going to use.
+            EnvironmentVariableSource.SetEnvironment(dict);
+            
+            var configParsed = ConfigurationParser.ParseConfigurationPosix<TestClass>();
+            Assert.Equal("Test", configParsed.Item);
+            Assert.NotNull(configParsed.SubItem);
+            if (configParsed.SubItem is { })
+            {
+                Assert.Equal("Test1", configParsed.SubItem.Item);
+                Assert.NotNull(configParsed.SubItem.SubSubItem);
+                if (configParsed.SubItem.SubSubItem is { })
+                {
+                    Assert.Equal("Test2", configParsed.SubItem.SubSubItem.Item);
+                    Assert.Equal(5000000L, configParsed.SubItem.SubSubItem.Long);
+                    Assert.Equal(6.002f, configParsed.SubItem.SubSubItem.Float);
+                    Assert.Equal(6.00d, configParsed.SubItem.SubSubItem.Double);
+                    Assert.Equal(true, configParsed.SubItem.SubSubItem.Bool);
+                    Assert.Equal(42, configParsed.SubItem.SubSubItem.Int);
+                }
+            }
         }
     }
 }
