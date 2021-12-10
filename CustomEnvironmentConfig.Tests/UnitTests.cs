@@ -494,5 +494,19 @@ namespace CustomEnvironmentConfig.Tests
                 }
             }
         }
+        
+        [Fact]
+        public void Can_Override_With_Posix_Values()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                { "SUB_CLASS_MY_ITEM", "Test" },
+            };
+            // Set the environment variables we're going to use.
+            EnvironmentVariableSource.SetEnvironment(dict);
+            
+            var configParsed = ConfigurationParser.ParseConfigurationPosix<UnderscoreClass>();
+            Assert.Equal("Test", configParsed.SubClass.MyItem);
+        }
     }
 }
