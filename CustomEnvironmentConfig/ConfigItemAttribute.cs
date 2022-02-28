@@ -10,16 +10,23 @@ namespace CustomEnvironmentConfig
         public bool Required { get; set; }
         public bool Ignore { get; set; }
         public object? Default { get; set; }
-        
         public bool Encrypt { get; set; }
+        public bool Json { get; set; }
         
-        public ConfigurationItem([CallerMemberName] string propertyName = "ENV", bool required = true, bool ignore = false, bool encrypt = false, object? @default = null)
+        /// <summary>
+        /// Specifies where your configuration should come from.
+        /// </summary>
+        public ConfigurationTypeEnum ConfigurationType { get; set; }
+        
+        public ConfigurationItem([CallerMemberName] string propertyName = "ENV", bool required = true, bool ignore = false, bool encrypt = false, object? @default = null, ConfigurationTypeEnum configurationType = ConfigurationTypeEnum.Default, bool json = false)
         {
             Name = propertyName;
             Required = required;
             Ignore = ignore;
             Encrypt = encrypt;
             Default = @default;
+            ConfigurationType = configurationType;
+            Json = json;
         }
     }
 }

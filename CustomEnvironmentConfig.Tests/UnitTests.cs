@@ -508,5 +508,45 @@ namespace CustomEnvironmentConfig.Tests
             var configParsed = ConfigurationParser.ParseConfigurationPosix<UnderscoreClass>();
             Assert.Equal("Test", configParsed.SubClass.MyItem);
         }
+
+        [Fact]
+        public void Can_Convert_From_Json()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                // The first item is if strings are escaped, i.e \"
+                { "QUEUEITEMS", "[{\\\"Url\\\":\\\"test.com\\\",\\\"Enabled\\\":true}]" },
+                { "CUSTOM_CLASS", "{\"Test\":\"Hi!\",\"Number\":23}"},
+            };
+            
+            EnvironmentVariableSource.SetEnvironment(dict);
+            
+            var configParsed = ConfigurationParser.ParseConfigurationPosix<ConvertibleClass>();
+            Assert.NotNull(configParsed);
+            Assert.Equal("test.com", configParsed.QueueItems[0].Url);
+            Assert.True(configParsed.QueueItems[0].Enabled);
+            Assert.Equal(23, configParsed.CustomClass.Number);
+            Assert.Equal("Hi!", configParsed.CustomClass.Test);
+            
+            ConfigurationWriter.WriteToFile(configParsed, "cctic.txt", true);
+            
+            var config = ConfigurationParser.Parse<ConvertibleClass>("cctic.txt");
+            Assert.NotNull(config);
+            Assert.Equal("test.com", config.QueueItems[0].Url);
+            Assert.True(config.QueueItems[0].Enabled);
+            Assert.Equal(23, config.CustomClass.Number);
+            Assert.Equal("Hi!", config.CustomClass.Test);
+        }
+        
+        [Fact]
+        public void Can_Convert_From_JsonX()
+        {   
+            var config = ConfigurationParser.Parse<ConvertibleClass>("xxtic.txt");
+            Assert.NotNull(config);
+            Assert.Equal("test.com", config.QueueItems[0].Url);
+            Assert.True(config.QueueItems[0].Enabled);
+            Assert.Equal(23, config.CustomClass.Number);
+            Assert.Equal("Hi!", config.CustomClass.Test);
+        }
     }
 }

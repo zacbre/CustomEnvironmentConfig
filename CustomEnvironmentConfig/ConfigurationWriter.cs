@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using CustomEnvironmentConfig.Exceptions;
+using Newtonsoft.Json;
 
 namespace CustomEnvironmentConfig
 {
@@ -49,11 +50,13 @@ namespace CustomEnvironmentConfig
                 }
 
                 var itemName = prop.Name;
+                var jsonEncode = false;
 
                 var configItemAttr = prop.GetCustomAttributes(true).FirstOrDefault(a => a.GetType() == typeof(ConfigurationItem));
                 if (configItemAttr is ConfigurationItem cAttr)
                 {
                     itemName = cAttr.Name;
+                    jsonEncode = cAttr.Json;
 
                     if (cAttr.Ignore)
                     {
@@ -63,12 +66,19 @@ namespace CustomEnvironmentConfig
 
                 var isNullable = Nullable.GetUnderlyingType(prop.PropertyType);
                 
-                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || prop.PropertyType.IsEnum || isNullable is {})
+                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || prop.PropertyType.IsEnum || isNullable is {} || jsonEncode)
                 {
                     var value = prop.GetValue(instance);
 
                     if (value is {})
                     {
+                        if (jsonEncode)
+                        {
+                            var serialized = JsonConvert.SerializeObject(value);
+                            fileStream.WriteLine($"{(prefix is {} ? $"{prefix + "_"}{itemName}" : itemName)} = {serialized}");
+                            continue;
+                        }
+                        
                         // try to cast env to that type.
                         string? convertedVal = (string?)Convert.ChangeType(value, typeof(string));
                         

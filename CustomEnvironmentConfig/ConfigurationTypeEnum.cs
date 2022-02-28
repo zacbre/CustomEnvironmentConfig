@@ -5,6 +5,7 @@ namespace CustomEnvironmentConfig
         PreferFile,
         PreferEnvironment,
         FileOnly,
-        EnvironmentOnly
+        EnvironmentOnly,
+        Default
     }
 }

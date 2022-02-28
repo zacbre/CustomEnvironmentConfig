@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using CustomEnvironmentConfig.Exceptions;
 using CustomEnvironmentConfig.Interfaces;
 using CustomEnvironmentConfig.Repositories;
+using Newtonsoft.Json;
 
 namespace CustomEnvironmentConfig
 {
@@ -149,6 +150,7 @@ namespace CustomEnvironmentConfig
                 var itemName = posix is true ? prop.Name.ToUpper() : prop.Name;
                 var required = true;
                 object? @default = null;
+                var jsonDecode = false;
                 
                 var configItemAttr = prop.GetCustomAttributes(true).FirstOrDefault(a => a.GetType() == typeof(ConfigurationItem));
                 if (configItemAttr is ConfigurationItem cAttr)
@@ -156,6 +158,7 @@ namespace CustomEnvironmentConfig
                     itemName = posix is true ? cAttr.Name.ToUpper() : cAttr.Name;
                     required = cAttr.Required;
                     @default = cAttr.Default;
+                    jsonDecode = cAttr.Json;
 
                     if (cAttr.Ignore)
                     {
@@ -165,7 +168,7 @@ namespace CustomEnvironmentConfig
 
                 var isNullable = Nullable.GetUnderlyingType(prop.PropertyType);
 
-                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || prop.PropertyType.IsEnum || isNullable is {})
+                if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || prop.PropertyType.IsEnum || isNullable is {} || jsonDecode)
                 {
                     var val = _environmentVariableRepository.GetEnvironmentVariable(prefix is {} ? $"{prefix + "_" ?? ""}{itemName}" : itemName);
                     if (required && string.IsNullOrEmpty(val))
@@ -195,7 +198,14 @@ namespace CustomEnvironmentConfig
                         }
                         
                         prop.SetValue(instance, parsedEnumVal);
+                        continue;
+                    }
 
+                    if (jsonDecode && val is {})
+                    {
+                        var escaped = val.Replace("\\\"", "\"");
+                        var deserialized = JsonConvert.DeserializeObject(escaped, isNullable ?? prop.PropertyType);
+                        prop.SetValue(instance, deserialized);
                         continue;
                     }
                     
