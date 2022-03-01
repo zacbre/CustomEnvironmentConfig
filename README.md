@@ -242,3 +242,35 @@ public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
                    .UseEnvironmentConfigurationPosix<MyConfiguration>(fileName: "filename.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment)               
             .....
 ```
+
+## Json Support
+If you want to support json objects, you can do so via the `Json` attribute.
+```c#
+[ConfigurationItem(Json = true)]
+public List<string> MyList { get; set; }
+```
+Config:
+```
+MyList = ["Item1","Item2","Item3","Item4"]
+```
+#### Multiline
+You can also use multiline capability for more easily readable json objects.
+```c#
+public class MyItem 
+{
+    public string Name { get; set; }
+    public int Value { get; set; }
+}
+
+// in your config class:
+...
+[ConfigurationItem(Json = true)]
+public MyItem Item { get; set; }
+```
+Config:
+```
+Item = `{
+    "Name": "My Item!",
+    "Value": 42
+}`
+```
