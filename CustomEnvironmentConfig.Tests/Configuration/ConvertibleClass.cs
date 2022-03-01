@@ -10,6 +10,9 @@ namespace CustomEnvironmentConfig.Tests.Configuration
         
         [ConfigurationItem("Custom_Class", Json=true)]
         public CustomClass CustomClass { get; set; }
+        
+        [ConfigurationItem("Custom_Class1")]
+        public string CustomClass1 { get; set; }
     }
 
     public class QueueItems

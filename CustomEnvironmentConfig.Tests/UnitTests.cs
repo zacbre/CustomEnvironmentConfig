@@ -517,6 +517,7 @@ namespace CustomEnvironmentConfig.Tests
                 // The first item is if strings are escaped, i.e \"
                 { "QUEUEITEMS", "[{\\\"Url\\\":\\\"test.com\\\",\\\"Enabled\\\":true}]" },
                 { "CUSTOM_CLASS", "{\"Test\":\"Hi!\",\"Number\":23}"},
+                { "CUSTOM_CLASS1", @"{""Test"":""Hi!"",""Number"":23}"},
             };
             
             EnvironmentVariableSource.SetEnvironment(dict);
@@ -539,9 +540,28 @@ namespace CustomEnvironmentConfig.Tests
         }
         
         [Fact]
-        public void Can_Convert_From_JsonX()
+        public void Can_Convert_From_Json_Multiline()
         {   
-            var config = ConfigurationParser.Parse<ConvertibleClass>("xxtic.txt");
+            var dict = new Dictionary<string, string>
+            {
+                // The first item is if strings are escaped, i.e \"
+                { "QUEUEITEMS", "[{\\\"Url\\\":\\\"test.com\\\",\\\"Enabled\\\":true}]" },
+                { "CUSTOM_CLASS", "{\"Test\":\"Hi!\",\"Number\":23}"},
+                { "CUSTOM_CLASS1", @"{""Test"":""Hi!"",""Number"":23}"},
+            };
+            
+            EnvironmentVariableSource.SetEnvironment(dict);
+            
+            var configParsed = ConfigurationParser.ParseConfigurationPosix<ConvertibleClass>();
+            Assert.NotNull(configParsed);
+            Assert.Equal("test.com", configParsed.QueueItems[0].Url);
+            Assert.True(configParsed.QueueItems[0].Enabled);
+            Assert.Equal(23, configParsed.CustomClass.Number);
+            Assert.Equal("Hi!", configParsed.CustomClass.Test);
+            
+            ConfigurationWriter.WriteToFile(configParsed, "ccfjm.txt", true);
+            
+            var config = ConfigurationParser.Parse<ConvertibleClass>("ccfjm.txt");
             Assert.NotNull(config);
             Assert.Equal("test.com", config.QueueItems[0].Url);
             Assert.True(config.QueueItems[0].Enabled);

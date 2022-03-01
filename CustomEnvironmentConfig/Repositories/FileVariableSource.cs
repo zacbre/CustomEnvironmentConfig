@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Text;
 using CustomEnvironmentConfig.Interfaces;
 
 namespace CustomEnvironmentConfig.Repositories
@@ -35,12 +36,32 @@ namespace CustomEnvironmentConfig.Repositories
         
         private void ReadLines(string[] lines)
         {
-            var currentLine = 0;
-            foreach (var line in lines)
+            for (int i = 0; i < lines.Length; i++)
             {
-                currentLine++;
-                ParseLine(line, currentLine);
+                var (key, val) = ParseKeyValue(lines[i], i);
+                if (key is null || val is null)
+                {
+                    continue;
+                }
+                
+                val = CheckForMultilineJsonBlock(lines, val, ref i);
+                
+                AddToStore(key, val);
             }
+        }
+
+        private string CheckForMultilineJsonBlock(string[] lines, string val, ref int i)
+        {
+            var stringBuilder = new StringBuilder(val);
+            if (val.StartsWith("`"))
+            {
+                while (!lines[i++].EndsWith("`"))
+                {
+                    stringBuilder.Append(lines[i]);
+                }
+                i--;
+            }
+            return stringBuilder.ToString().Trim(new [] {'`'});
         }
 
         private void ReadFile(string fileName)
@@ -53,20 +74,14 @@ namespace CustomEnvironmentConfig.Repositories
                 }
             }
 
-            var currentLine = 0;
-            var fileLines = File.ReadAllLines(fileName);
-            foreach (var line in fileLines)
-            {
-                currentLine++;
-                ParseLine(line, currentLine);
-            }
+            ReadLines(File.ReadAllLines(fileName));
         }
-       
-        private void ParseLine(string line, int currentLine)
+        
+        private (string?, string?) ParseKeyValue(string line, int currentLine)
         {
             if (line.StartsWith("#") || string.IsNullOrEmpty(line))
             {
-                return;
+                return (null, null);
             }
 
             if (!line.Contains("="))
@@ -78,6 +93,11 @@ namespace CustomEnvironmentConfig.Repositories
             var keyName = line.Substring(0, equalIndex).Trim(trimChars);
             var keyValue = line.Substring(equalIndex + 1, line.Length - equalIndex - 1).Trim(trimChars);
 
+            return (keyName, keyValue);
+        }
+       
+        private void AddToStore(string keyName, string keyValue)
+        {
             if (_fileValues.ContainsKey(keyName))
             {
                 throw new DuplicateNameException($"Duplicate key '{keyName}' detected in environment file."); 
