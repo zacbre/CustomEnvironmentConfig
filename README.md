@@ -5,6 +5,9 @@ Enables binding environment variables and/or environment files to classes.
 
 ## Changelog
 ```
+03/01/2022 [v1.7.0]
+- Add support for complex json objects
+- Add .net 6 support
 10/04/2021 [v1.6.3]
 - Add support for POSIX style environment variables.
 - Add builder extensions for POSIX.
