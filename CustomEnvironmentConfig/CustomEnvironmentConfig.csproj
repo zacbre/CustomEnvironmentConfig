@@ -14,7 +14,7 @@
         <LangVersion>default</LangVersion>
         <Nullable>enable</Nullable>
         <PackageTags>environment, configuration</PackageTags>
-        <TargetFrameworks>net5.0;net6.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
+        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,6 +22,7 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.10" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.10" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="System.Text.Encodings.Web" Version="7.0.0" />
     </ItemGroup>
 
 </Project>
