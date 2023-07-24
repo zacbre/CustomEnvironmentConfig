@@ -9,12 +9,13 @@
         <PackageProjectUrl>https://github.com/zacbre/CustomEnvironmentConfig/</PackageProjectUrl>
         <PackageLicense>https://github.com/zacbre/CustomEnvironmentConfig</PackageLicense>
         <RepositoryUrl>https://github.com/zacbre/CustomEnvironmentConfig/</RepositoryUrl>
-        <PackageVersion>2.0.0</PackageVersion>
+        <PackageVersion>2.0.1</PackageVersion>
         <PackageLicenseUrl>https://github.com/zacbre/CustomEnvironmentConfig/master/LICENSE</PackageLicenseUrl>
         <LangVersion>default</LangVersion>
         <Nullable>enable</Nullable>
         <PackageTags>environment, configuration</PackageTags>
         <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,6 +24,10 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="System.Text.Encodings.Web" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
 
 </Project>
