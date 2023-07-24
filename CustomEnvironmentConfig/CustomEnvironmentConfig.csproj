@@ -4,13 +4,13 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>CustomEnvironmentConfig</PackageId>
         <Title>CustomEnvironmentConfig</Title>
-        <Authors>zacbrec</Authors>
+        <Authors>zacbre</Authors>
         <Description>Enables binding environment variables to classes.</Description>
-        <PackageProjectUrl>https://github.com/zacbrec/CustomEnvironmentConfig/</PackageProjectUrl>
-        <PackageLicense>https://github.com/ThrDev/dotnetcore-custom-env</PackageLicense>
-        <RepositoryUrl>https://github.com/zacbrec/CustomEnvironmentConfig/</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/zacbre/CustomEnvironmentConfig/</PackageProjectUrl>
+        <PackageLicense>https://github.com/zacbre/CustomEnvironmentConfig</PackageLicense>
+        <RepositoryUrl>https://github.com/zacbre/CustomEnvironmentConfig/</RepositoryUrl>
         <PackageVersion>2.0.0</PackageVersion>
-        <PackageLicenseUrl>https://github.com/zacbrec/CustomEnvironmentConfig/master/LICENSE</PackageLicenseUrl>
+        <PackageLicenseUrl>https://github.com/zacbre/CustomEnvironmentConfig/master/LICENSE</PackageLicenseUrl>
         <LangVersion>default</LangVersion>
         <Nullable>enable</Nullable>
         <PackageTags>environment, configuration</PackageTags>
