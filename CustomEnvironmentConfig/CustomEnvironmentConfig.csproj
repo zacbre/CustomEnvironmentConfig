@@ -9,19 +9,20 @@
         <PackageProjectUrl>https://github.com/zacbrec/CustomEnvironmentConfig/</PackageProjectUrl>
         <PackageLicense>https://github.com/ThrDev/dotnetcore-custom-env</PackageLicense>
         <RepositoryUrl>https://github.com/zacbrec/CustomEnvironmentConfig/</RepositoryUrl>
-        <PackageVersion>1.7.0</PackageVersion>
+        <PackageVersion>2.0.0</PackageVersion>
         <PackageLicenseUrl>https://github.com/zacbrec/CustomEnvironmentConfig/master/LICENSE</PackageLicenseUrl>
         <LangVersion>default</LangVersion>
         <Nullable>enable</Nullable>
         <PackageTags>environment, configuration</PackageTags>
-        <TargetFrameworks>net5.0;net6.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
+        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.10" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.10" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="System.Text.Encodings.Web" Version="7.0.0" />
     </ItemGroup>
 
 </Project>

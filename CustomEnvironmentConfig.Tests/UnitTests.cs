@@ -361,7 +361,7 @@ namespace CustomEnvironmentConfig.Tests
                 ConfigurationParser.ParseConfiguration<DefaultValueBrokenClass>();
             });
 
-            Assert.Contains("Input string was not in a correct format", msg.Message);
+            Assert.Contains("The input string 'y' was not in a correct format", msg.Message);
         }
 
         [Fact]
