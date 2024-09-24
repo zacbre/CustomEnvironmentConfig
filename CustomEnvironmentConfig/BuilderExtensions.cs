@@ -1,7 +1,4 @@
-using CustomEnvironmentConfig.Interfaces;
-using CustomEnvironmentConfig.Repositories;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CustomEnvironmentConfig

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using CustomEnvironmentConfig.Exceptions;
 using CustomEnvironmentConfig.Interfaces;
 using CustomEnvironmentConfig.Repositories;
-using Newtonsoft.Json;
 
 namespace CustomEnvironmentConfig
 {
@@ -204,7 +204,7 @@ namespace CustomEnvironmentConfig
                     if (jsonDecode && val is {})
                     {
                         var escaped = val.Replace("\\\"", "\"");
-                        var deserialized = JsonConvert.DeserializeObject(escaped, isNullable ?? prop.PropertyType);
+                        var deserialized = JsonSerializer.Deserialize(escaped, isNullable ?? prop.PropertyType);
                         prop.SetValue(instance, deserialized);
                         continue;
                     }

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using CustomEnvironmentConfig.Exceptions;
-using Newtonsoft.Json;
 
 namespace CustomEnvironmentConfig
 {
@@ -74,7 +74,7 @@ namespace CustomEnvironmentConfig
                     {
                         if (jsonEncode)
                         {
-                            var serialized = JsonConvert.SerializeObject(value);
+                            var serialized = JsonSerializer.Serialize(value);
                             fileStream.WriteLine($"{(prefix is {} ? $"{prefix + "_"}{itemName}" : itemName)} = {serialized}");
                             continue;
                         }
