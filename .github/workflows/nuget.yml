@@ -11,14 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup dotnet 6
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 6.x
-      - name: Setup dotnet 7
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 7.x
       - name: Setup dotnet 8.x
         uses: actions/setup-dotnet@v1
         with:
