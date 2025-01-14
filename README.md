@@ -5,6 +5,8 @@ Enables binding environment variables and/or environment files to classes.
 
 ## Changelog
 ```
+01/14/2025 [v8.0.1]
+- System.Text.Json to 8.0.5.
 08/24/2024 [v8.0.0]
 - Remove Newtonsoft.Json dependency.
 - Add .net 8 support.

@@ -9,7 +9,7 @@
         <PackageProjectUrl>https://github.com/zacbre/CustomEnvironmentConfig/</PackageProjectUrl>
         <PackageLicense>https://github.com/zacbre/CustomEnvironmentConfig</PackageLicense>
         <RepositoryUrl>https://github.com/zacbre/CustomEnvironmentConfig/</RepositoryUrl>
-        <PackageVersion>8.0.0</PackageVersion>
+        <PackageVersion>8.0.1</PackageVersion>
         <PackageLicenseUrl>https://github.com/zacbre/CustomEnvironmentConfig/master/LICENSE</PackageLicenseUrl>
         <LangVersion>12</LangVersion>
         <Nullable>enable</Nullable>
