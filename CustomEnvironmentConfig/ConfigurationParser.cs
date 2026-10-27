@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using CustomEnvironmentConfig.Exceptions;
@@ -23,7 +25,7 @@ namespace CustomEnvironmentConfig
         {
             _environmentVariableRepository = new EnvironmentVariableRepository(
                 new EnvironmentVariableSource(), 
-                new FileVariableSource(configurationType, fileName),
+                new FileVariableSource(configurationType, [fileName]),
                 configurationType);
         }
         
@@ -47,7 +49,7 @@ namespace CustomEnvironmentConfig
         {
             var parser = new ConfigurationParser(new EnvironmentVariableRepository(
                 new EnvironmentVariableSource(), 
-                new FileVariableSource(ConfigurationTypeEnum.PreferEnvironment, fileName)));
+                new FileVariableSource(ConfigurationTypeEnum.PreferEnvironment, [fileName])));
             return parser.ParseConfiguration<T>();
         }
         
@@ -55,7 +57,7 @@ namespace CustomEnvironmentConfig
         {
             var parser = new ConfigurationParser(new EnvironmentVariableRepository(
                 new EnvironmentVariableSource(), 
-                new FileVariableSource(ConfigurationTypeEnum.PreferEnvironment, fileName)));
+                new FileVariableSource(ConfigurationTypeEnum.PreferEnvironment, [fileName])));
             return parser.ParseConfigurationPosix<T>();
         }
 
@@ -63,7 +65,7 @@ namespace CustomEnvironmentConfig
         {
             var parser = new ConfigurationParser(new EnvironmentVariableRepository(
                 new EnvironmentVariableSource(), 
-                new FileVariableSource(configurationTypeEnum, fileName),
+                new FileVariableSource(configurationTypeEnum, [fileName]),
                 configurationTypeEnum));
             return parser.ParseConfiguration<T>();
         }
@@ -72,7 +74,7 @@ namespace CustomEnvironmentConfig
         {
             var parser = new ConfigurationParser(new EnvironmentVariableRepository(
                 new EnvironmentVariableSource(), 
-                new FileVariableSource(configurationTypeEnum, fileName),
+                new FileVariableSource(configurationTypeEnum, [fileName]),
                 configurationTypeEnum));
             return parser.ParseConfigurationPosix<T>();
         }
@@ -81,7 +83,7 @@ namespace CustomEnvironmentConfig
         {
             var parser = new ConfigurationParser(new EnvironmentVariableRepository(
                 new EnvironmentVariableSource(), 
-                new FileVariableSource(configurationTypeEnum, fileName),
+                new FileVariableSource(configurationTypeEnum, [fileName]),
                 configurationTypeEnum));
             return parser.ParseConfiguration<T>(decryptHandler: decryptHandler);
         }
@@ -90,7 +92,7 @@ namespace CustomEnvironmentConfig
         {
             var parser = new ConfigurationParser(new EnvironmentVariableRepository(
                 new EnvironmentVariableSource(), 
-                new FileVariableSource(configurationTypeEnum, fileName),
+                new FileVariableSource(configurationTypeEnum, [fileName]),
                 configurationTypeEnum));
             return parser.ParseConfigurationPosix<T>(decryptHandler: decryptHandler, posix: true);
         }
@@ -106,6 +108,56 @@ namespace CustomEnvironmentConfig
             var parser = new ConfigurationParser(env);
             return parser.ParseConfigurationPosix<T>();
         }
+
+        public static T ParseFiles<T>(params string[] fileNames)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(ConfigurationTypeEnum.PreferEnvironment, fileNames)));
+            return parser.ParseConfiguration<T>();
+        }
+
+        public static T ParseFiles<T>(ConfigurationTypeEnum configurationTypeEnum, params string[] fileNames)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationTypeEnum, fileNames), configurationTypeEnum));
+            return parser.ParseConfiguration<T>();
+        }
+
+        public static T ParseFiles<T>(ConfigurationTypeEnum configurationTypeEnum,
+            Func<string, string, string> decryptHandler, params string[] fileNames)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationTypeEnum, fileNames), configurationTypeEnum));
+            return parser.ParseConfiguration<T>(decryptHandler: decryptHandler);
+        }
+        
+        public static T ParseFilesPosix<T>(params string[] fileNames)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(ConfigurationTypeEnum.PreferEnvironment, fileNames)));
+            return parser.ParseConfigurationPosix<T>();
+        }
+
+        public static T ParseFilesPosix<T>(ConfigurationTypeEnum configurationTypeEnum, params string[] fileNames)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationTypeEnum, fileNames), configurationTypeEnum));
+            return parser.ParseConfigurationPosix<T>();
+        }
+
+        public static T ParseFilesPosix<T>(ConfigurationTypeEnum configurationTypeEnum,
+            Func<string, string, string> decryptHandler, params string[] fileNames)
+        {
+            var parser = new ConfigurationParser(new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationTypeEnum, fileNames), configurationTypeEnum));
+            return parser.ParseConfigurationPosix<T>(decryptHandler: decryptHandler, posix: true);
+        }
         
         public T ParseConfiguration<T>()
         {
@@ -115,9 +167,10 @@ namespace CustomEnvironmentConfig
         public T ParseConfiguration<T>(Func<string,string,string>? decryptHandler)
         {
             var type = typeof(T);
-            var instance = (T)FormatterServices.GetUninitializedObject(type);
-            GetProperties(instance, type, null, new Stack<Type>(), decryptHandler, posix: null);
-
+            var instance = (T)RuntimeHelpers.GetUninitializedObject(type);
+            var requiredProps = new Dictionary<string, RequiredProperty>();
+            GetProperties(instance, type, null, requiredProps, new (), decryptHandler, posix: null);
+            CheckRequiredProperties(instance, requiredProps);
             return instance;
         }
         
@@ -129,13 +182,14 @@ namespace CustomEnvironmentConfig
         public T ParseConfigurationPosix<T>(Func<string,string,string>? decryptHandler, bool? posix)
         {
             var type = typeof(T);
-            var instance = (T)FormatterServices.GetUninitializedObject(type);
-            GetProperties(instance, type, null, new Stack<Type>(), decryptHandler, posix: posix);
-
+            var instance = (T)RuntimeHelpers.GetUninitializedObject(type);
+            var requiredProps = new Dictionary<string, RequiredProperty>();
+            GetProperties(instance, type, null, requiredProps, new (), decryptHandler, posix: posix);
+            CheckRequiredProperties(instance, requiredProps);
             return instance;
         }
 
-        private void GetProperties<T>(T instance, Type type, string? prefix, Stack<Type> recursive, 
+        private void GetProperties<T>(T instance, Type type, string? prefix, Dictionary<string, RequiredProperty> requiredProps, Stack<Type> recursive, 
                                       Func<string,string,string>? decryptHandler, bool? posix)
         {
             Push(recursive, type);
@@ -171,21 +225,20 @@ namespace CustomEnvironmentConfig
                 if (prop.PropertyType.IsPrimitive || prop.PropertyType == typeof(string) || prop.PropertyType.IsEnum || isNullable is {} || jsonDecode)
                 {
                     var val = _environmentVariableRepository.GetEnvironmentVariable(prefix is {} ? $"{prefix + "_" ?? ""}{itemName}" : itemName);
-                    if (required && string.IsNullOrEmpty(val))
+                    switch (required)
                     {
-                        throw new KeyNotFoundException(
-                            "[CustomEnvironmentConfig] Required configuration environment variable is empty: " +
-                            $"{type.Name}.{prop.Name} (looking for env '{(prefix is {} ? $"{prefix + "_" ?? ""}{itemName}" : itemName)}'.");
-                    }
-
-                    if (!required && string.IsNullOrEmpty(val))
-                    {
-                        if (@default is {})
+                        case true when string.IsNullOrEmpty(val):
+                            requiredProps.TryAdd($"'{(prefix is not null ? $"{prefix + "_" ?? ""}{itemName}" : itemName)}", new RequiredProperty(prefix, itemName, prop, type));
+                            break;
+                        case false when string.IsNullOrEmpty(val):
                         {
-                            var conv = Convert.ChangeType(@default, (isNullable ?? prop.PropertyType));
-                            prop.SetValue(instance, conv);
+                            if (@default is {})
+                            {
+                                var conv = Convert.ChangeType(@default, (isNullable ?? prop.PropertyType));
+                                prop.SetValue(instance, conv);
+                            }
+                            continue;
                         }
-                        continue;
                     }
 
                     if (prop.PropertyType.IsEnum)
@@ -223,8 +276,8 @@ namespace CustomEnvironmentConfig
                 else
                 {
                     // Create new instance of type.
-                    var subInstance = FormatterServices.GetUninitializedObject(prop.PropertyType);
-                    GetProperties(subInstance, prop.PropertyType, $"{(prefix is {} ? prefix + "_" : "")}{itemName}", recursive, decryptHandler, posix: posix);
+                    var subInstance = RuntimeHelpers.GetUninitializedObject(prop.PropertyType);
+                    GetProperties(subInstance, prop.PropertyType, $"{(prefix is {} ? prefix + "_" : "")}{itemName}", requiredProps, recursive, decryptHandler, posix: posix);
                     prop.SetValue(instance, subInstance);
                 }
             }
@@ -240,6 +293,25 @@ namespace CustomEnvironmentConfig
             }
 
             stack.Push(item);
+        }
+        
+        private void CheckRequiredProperties<T>(T instance, Dictionary<string, RequiredProperty> requiredProps)
+        {
+            var missingProps = new List<RequiredProperty>();
+            foreach (var (_, reqProp) in requiredProps)
+            {
+                if (reqProp.Prop.GetValue(instance) is null or "")
+                {
+                    missingProps.Add(reqProp);
+                }
+            }
+            
+            if (missingProps.Any())
+            {
+                throw new KeyNotFoundException(
+                    "[CustomEnvironmentConfig] Required configuration environment variables are empty: " +
+                    string.Join(", ", missingProps.Select(p => $"{p.Type.Name}.{p.Prop.Name} (looking for env '{(p.Prefix is not null ? $"{p.Prefix + "_" ?? ""}{p.Name}" : p.Name)}')")));
+            }
         }
     }
 }

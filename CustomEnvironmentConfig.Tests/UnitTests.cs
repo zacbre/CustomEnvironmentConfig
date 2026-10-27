@@ -568,5 +568,29 @@ namespace CustomEnvironmentConfig.Tests
             Assert.Equal(23, config.CustomClass.Number);
             Assert.Equal("Hi!", config.CustomClass.Test);
         }
+
+        [Fact]
+        public void Can_Use_File_Overrides()
+        {
+            var baseConfig = new OverridableClass
+            {
+                ValueA = "Base A",
+                ValueB = "Base B",
+                ValueC = "Base C",
+            };
+            ConfigurationWriter.WriteToFile(baseConfig, "cufo_a.txt", true);
+
+            var overrideConfig = new OverridableClass
+            {
+                ValueB = "Overridden B"
+            };
+            ConfigurationWriter.WriteToFile(overrideConfig, "cufo_b.txt", true);
+            
+            var config = ConfigurationParser.ParseFiles<OverridableClass>("cufo_a.txt", "cufo_b.txt");
+            Assert.NotNull(config);
+            Assert.Equal("Base A", config.ValueA);
+            Assert.Equal("Overridden B", config.ValueB);
+            Assert.Equal("Base C", config.ValueC);
+        }
     }
 }

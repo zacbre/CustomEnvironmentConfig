@@ -50,7 +50,7 @@ namespace CustomEnvironmentConfig
             {
                 var configurationParser = new ConfigurationParser(configurationType, fileName);
                 var instance = configurationParser.ParseConfiguration<T>();
-                services.AddSingleton(typeof(T), instance);
+                if (instance != null) services.AddSingleton(typeof(T), instance);
             });
         }
         
@@ -61,7 +61,7 @@ namespace CustomEnvironmentConfig
             {
                 var configurationParser = new ConfigurationParser(configurationType, fileName);
                 var instance = configurationParser.ParseConfigurationPosix<T>();
-                services.AddSingleton(typeof(T), instance);
+                if (instance != null) services.AddSingleton(typeof(T), instance);
             });
         }
     }

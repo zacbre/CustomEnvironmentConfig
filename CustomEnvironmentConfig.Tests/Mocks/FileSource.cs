@@ -5,13 +5,8 @@ namespace CustomEnvironmentConfig.Tests.Mocks
 {
     public class FileSource : IEnvironmentSource
     {
-        private FileVariableSource _fileVariableSource;
+        private FileVariableSource _fileVariableSource = new();
 
-        public FileSource()
-        {
-            _fileVariableSource = new FileVariableSource();
-        }
-        
         public void SetEnvironment(string[] lines)
         {
             _fileVariableSource = new FileVariableSource(lines);

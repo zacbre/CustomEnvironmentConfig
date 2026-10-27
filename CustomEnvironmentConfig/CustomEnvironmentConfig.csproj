@@ -9,21 +9,21 @@
         <PackageProjectUrl>https://github.com/zacbre/CustomEnvironmentConfig/</PackageProjectUrl>
         <PackageLicense>https://github.com/zacbre/CustomEnvironmentConfig</PackageLicense>
         <RepositoryUrl>https://github.com/zacbre/CustomEnvironmentConfig/</RepositoryUrl>
-        <PackageVersion>8.0.1</PackageVersion>
-        <PackageLicenseUrl>https://github.com/zacbre/CustomEnvironmentConfig/master/LICENSE</PackageLicenseUrl>
-        <LangVersion>12</LangVersion>
+        <PackageVersion>10.0.14</PackageVersion>
+        <PackageLicenseUrl></PackageLicenseUrl>
+        <LangVersion>default</LangVersion>
         <Nullable>enable</Nullable>
         <PackageTags>environment, configuration</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
+        <AssemblyVersion>10.0.14</AssemblyVersion>
+        <FileVersion>10.0.14</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-      <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
-      <PackageReference Include="System.Text.Json" Version="8.0.5" />
+      <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.13" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.14" />
     </ItemGroup>
 
     <ItemGroup>

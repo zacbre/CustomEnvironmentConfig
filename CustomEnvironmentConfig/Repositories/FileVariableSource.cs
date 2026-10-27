@@ -9,32 +9,37 @@ namespace CustomEnvironmentConfig.Repositories
 {
     public class FileVariableSource : IEnvironmentSource
     {
-        private readonly Dictionary<string, string> _fileValues = new Dictionary<string, string>();
-        private readonly char[] trimChars = new[] {' ', '"', '\''};
+        private readonly Dictionary<string, string> _fileValues = new();
+        private readonly char[] _trimChars = [' ', '"', '\''];
         private readonly ConfigurationTypeEnum _configurationType;
 
         public FileVariableSource()
         {
             _configurationType = ConfigurationTypeEnum.PreferEnvironment;
         }
-        public FileVariableSource(ConfigurationTypeEnum configurationType = ConfigurationTypeEnum.PreferEnvironment, string? filename = null)
+        public FileVariableSource(ConfigurationTypeEnum configurationType = ConfigurationTypeEnum.PreferEnvironment, string?[]? fileNames = null)
         {
             _configurationType = configurationType;
-            if (filename is {})
+            
+            if (fileNames is null) return;
+            
+            foreach (var filename in fileNames)
             {
-                ReadFile(filename);
+                if (filename is null) continue;
+                
+                ReadFile(filename, allowDuplicates: true);
             }
         }
         
-        public FileVariableSource(string[]? lines = null)
+        public FileVariableSource(string[]? lines = null, bool allowDuplicates = false)
         {
-            if (lines is {})
+            if (lines is not null)
             {
-                ReadLines(lines);
+                ReadLines(lines, allowDuplicates);
             }
         }
         
-        private void ReadLines(string[] lines)
+        private void ReadLines(string[] lines, bool allowDuplicates = false)
         {
             for (int i = 0; i < lines.Length; i++)
             {
@@ -46,7 +51,7 @@ namespace CustomEnvironmentConfig.Repositories
                 
                 val = CheckForMultilineJsonBlock(lines, val, ref i);
                 
-                AddToStore(key, val);
+                AddToStore(key, val, allowDuplicates);
             }
         }
 
@@ -61,10 +66,10 @@ namespace CustomEnvironmentConfig.Repositories
                 }
                 i--;
             }
-            return stringBuilder.ToString().Trim(new [] {'`'});
+            return stringBuilder.ToString().Trim(['`']);
         }
 
-        private void ReadFile(string fileName)
+        private void ReadFile(string fileName, bool allowDuplicates = false)
         {
             if (_configurationType == ConfigurationTypeEnum.FileOnly)
             {
@@ -74,7 +79,7 @@ namespace CustomEnvironmentConfig.Repositories
                 }
             }
 
-            ReadLines(File.ReadAllLines(fileName));
+            ReadLines(File.ReadAllLines(fileName), allowDuplicates);
         }
         
         private (string?, string?) ParseKeyValue(string line, int currentLine)
@@ -90,25 +95,25 @@ namespace CustomEnvironmentConfig.Repositories
             }
 
             var equalIndex = line.IndexOf("=", StringComparison.Ordinal);
-            var keyName = line.Substring(0, equalIndex).Trim(trimChars);
-            var keyValue = line.Substring(equalIndex + 1, line.Length - equalIndex - 1).Trim(trimChars);
+            var keyName = line.Substring(0, equalIndex).Trim(_trimChars);
+            var keyValue = line.Substring(equalIndex + 1, line.Length - equalIndex - 1).Trim(_trimChars);
 
             return (keyName, keyValue);
         }
        
-        private void AddToStore(string keyName, string keyValue)
+        private void AddToStore(string keyName, string keyValue, bool allowDuplicates = false)
         {
-            if (_fileValues.ContainsKey(keyName))
-            {
-                throw new DuplicateNameException($"Duplicate key '{keyName}' detected in environment file."); 
-            }
+            if (_fileValues.TryAdd(keyName, keyValue)) return;
             
-            _fileValues.Add(keyName, keyValue);
+            if (!allowDuplicates)
+                throw new DuplicateNameException($"Duplicate key '{keyName}' detected in environment file.");
+            
+            _fileValues[keyName] = keyValue;
         }
 
         public string? Get(string keyName)
         {
-            return _fileValues.TryGetValue(keyName, out var value) ? value : null;
+            return _fileValues.GetValueOrDefault(keyName);
         }
     }
 }
