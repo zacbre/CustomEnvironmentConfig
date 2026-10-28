@@ -5,6 +5,10 @@ Enables binding environment variables and/or environment files to classes.
 
 ## Changelog
 ```
+10/27/2026 [v10.0.14]
+- .NET 10 support
+- Add support for parsing from multiple files with overrides
+- Checks all of the missing configuration items at the end and gives a summary now instead of one exception per.
 01/14/2025 [v8.0.1]
 - System.Text.Json to 8.0.5.
 08/24/2024 [v8.0.0]
@@ -52,31 +56,9 @@ public class MyConfigSubClass
 
 **(Program.cs)**
 ```c#
-public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                   .UseEnvironmentConfiguration<MyConfiguration>()               
-            .....
-```
-
-**(Startup.cs)**
-```c#
-public class Startup 
-{
-    private readonly MyConfiguration _configuration;
-    
-    public Startup(MyConfiguration configuration) 
-    {
-        _configuration = configuration;
-    }
-    
-    public void ConfigureServices(IServiceCollection services)
-    {
-        ...
-        Console.WriteLine(_configuration.MyConfigItem);
-        Console.WriteLine(_configuration.Subclass.MyConfigSubItem);
-        ...
-    }
-}
+var builder = Host.CreateApplicationBuilder(args);
+builder.UseEnvironmentConfiguration<MyConfiguration>()               
+.....
 ```
 
 If you want, you can re-map the name of the items using [ConfigurationItem]:
@@ -161,10 +143,8 @@ Conversions across types are supported for defaults, for instance:
 Most of this applies from above, except instead your IWebHostBuilder would look like:
 ```c#
 // Program.cs
-public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                   .UseEnvironmentConfiguration<MyConfiguration>(fileName: "filename.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment)               
-            .....
+var builder = Host.CreateApplicationBuilder(args);
+builder.UseEnvironmentConfiguration<MyConfiguration>(fileName: "filename.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment);          
 ```
 
 ## Non-DI:
@@ -201,10 +181,8 @@ To use this functionality, there's two ways, both DI and non-DI:
 ### DI
 ```c#
 // Program.cs
-public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                   .UseEnvironmentConfiguration<MyConfiguration>(fileName: "filename.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment)               
-            .....
+var builder = Host.CreateApplicationBuilder(args);
+builder.UseEnvironmentConfiguration<MyConfiguration>(fileName: "filename.env", configurationTypeEnum: ConfigurationTypeEnum.PreferEnvironment);               
 ```
 ### Non-DI
 ```c#
@@ -284,4 +262,17 @@ Item = `{
     "Name": "My Item!",
     "Value": 42
 }`
+```
+
+## Overriding Configuration Items
+Sometimes you might want to specify items from multiple files, to do so, you can use the following syntax:
+
+```csharp
+ConfigurationParser.ParseFiles<T>("base.env", "override.env");
+```
+
+You can also use the builder syntax.
+```csharp
+var builder = Host.CreateApplicationBuilder(args);
+builder.UseEnvironmentConfiguration<MyConfiguration>(fileNames: "base.env", "override.env");
 ```

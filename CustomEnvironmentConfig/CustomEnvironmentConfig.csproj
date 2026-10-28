@@ -9,15 +9,15 @@
         <PackageProjectUrl>https://github.com/zacbre/CustomEnvironmentConfig/</PackageProjectUrl>
         <PackageLicense>https://github.com/zacbre/CustomEnvironmentConfig</PackageLicense>
         <RepositoryUrl>https://github.com/zacbre/CustomEnvironmentConfig/</RepositoryUrl>
-        <PackageVersion>10.0.14</PackageVersion>
+        <PackageVersion>10.0.15</PackageVersion>
         <PackageLicenseUrl></PackageLicenseUrl>
         <LangVersion>default</LangVersion>
         <Nullable>enable</Nullable>
         <PackageTags>environment, configuration</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <TargetFramework>net10.0</TargetFramework>
-        <AssemblyVersion>10.0.14</AssemblyVersion>
-        <FileVersion>10.0.14</FileVersion>
+        <AssemblyVersion>10.0.15</AssemblyVersion>
+        <FileVersion>10.0.15</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>

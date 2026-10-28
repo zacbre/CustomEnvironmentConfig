@@ -29,6 +29,14 @@ namespace CustomEnvironmentConfig
                 configurationType);
         }
         
+        public ConfigurationParser(ConfigurationTypeEnum configurationType, string?[]? fileNames = null)
+        {
+            _environmentVariableRepository = new EnvironmentVariableRepository(
+                new EnvironmentVariableSource(), 
+                new FileVariableSource(configurationType, fileNames),
+                configurationType);
+        }
+        
         public static T Parse<T>()
         {
             var parser = new ConfigurationParser(new EnvironmentVariableRepository(
